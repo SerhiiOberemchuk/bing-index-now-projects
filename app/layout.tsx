@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     description: 'Sviluppo siti web, app, e-commerce, UI/UX design e SEO. Dalla prima scintilla al lancio completo. Preventivo gratuito.',
     images: [
       {
-        url: '/og-image.jpg',
+        url: '/og-image.svg',
         width: 1200,
         height: 630,
         alt: 'OBRIYM - Agenzia Web Full-cycle',
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'OBRIYM | Agenzia Web Full-cycle Italia',
     description: 'Sviluppo siti web, app, e-commerce, UI/UX design e SEO. Dalla prima scintilla al lancio completo.',
-    images: ['/og-image.jpg'],
+    images: ['/og-image.svg'],
     creator: '@obriym',
   },
   robots: {
@@ -82,24 +82,7 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
-  },
-  verification: {
-    google: 'your-google-verification-code',
+    icon: '/icon.svg',
   },
   category: 'technology',
     generator: 'v0.app'
