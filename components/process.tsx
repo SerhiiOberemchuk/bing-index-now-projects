@@ -20,17 +20,23 @@ export function Process() {
   return (
     <section id="process" className="py-24 md:py-32 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl mb-16">
-          <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-10 items-end mb-16">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-4">
             Come lavoriamo
           </p>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6">
-            3 semplici passi verso un sito moderno
-          </h2>
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            Segui questi semplici passi per ottenere un sito web moderno e ottimizzato SEO, 
-            adattato ai tuoi obiettivi aziendali.
-          </p>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight mb-6">
+              Un processo chiaro, elegante, trasparente
+            </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              Segui questi semplici passi per ottenere un sito web moderno e ottimizzato SEO, 
+              adattato ai tuoi obiettivi aziendali.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border bg-secondary p-6 text-sm text-muted-foreground leading-relaxed">
+            Ogni fase è pensata per ridurre le incertezze e massimizzare la qualità finale, con
+            aggiornamenti costanti e decisioni condivise.
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -39,8 +45,8 @@ export function Process() {
               key={step.number}
               className="relative group"
             >
-              <div className="p-8 border border-border rounded-lg bg-card hover:border-foreground/20 transition-colors duration-300 h-full">
-                <span className="text-6xl md:text-7xl font-bold text-muted/30 group-hover:text-foreground/10 transition-colors duration-300">
+              <div className="p-8 border border-border rounded-2xl bg-card hover:border-foreground/20 transition-all duration-300 h-full hover:-translate-y-1 hover:shadow-[0_18px_50px_rgba(15,15,15,0.12)]">
+                <span className="text-5xl md:text-6xl font-semibold text-muted/30 group-hover:text-foreground/10 transition-colors duration-300">
                   {step.number}
                 </span>
                 <h3 className="text-xl font-semibold mt-4 mb-3">{step.title}</h3>
@@ -50,7 +56,7 @@ export function Process() {
               </div>
               
               {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-px bg-border" />
+                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-px bg-gradient-to-r from-border to-transparent" />
               )}
             </div>
           ))}

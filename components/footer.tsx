@@ -16,17 +16,22 @@ const social = [
 
 export function Footer() {
   return (
-    <footer className="bg-background border-t border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer className="bg-foreground text-background border-t border-white/10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="md:col-span-2">
-            <Link href="/" className="text-xl font-bold tracking-tight">
+            <Link href="/" className="text-xl font-semibold tracking-[0.2em]">
               OBRIYM
             </Link>
-            <p className="mt-4 text-muted-foreground max-w-sm leading-relaxed">
+            <p className="mt-4 text-background/70 max-w-sm leading-relaxed">
               Agenzia web full-cycle. Dalla prima scintilla al lancio completo — 
               creiamo prodotti digitali che fanno un impatto reale.
             </p>
+            <div className="mt-6 flex flex-wrap gap-3 text-xs uppercase tracking-[0.3em] text-background/50">
+              <span className="rounded-full border border-white/10 px-3 py-2">Strategia</span>
+              <span className="rounded-full border border-white/10 px-3 py-2">Design</span>
+              <span className="rounded-full border border-white/10 px-3 py-2">Engineering</span>
+            </div>
           </div>
 
           <div>
@@ -36,7 +41,7 @@ export function Footer() {
                 <li key={item.name}>
                   <Link
                     href={item.href}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-background/70 hover:text-background transition-colors"
                   >
                     {item.name}
                   </Link>
@@ -54,7 +59,7 @@ export function Footer() {
                     href={item.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-background/70 hover:text-background transition-colors"
                   >
                     {item.name}
                   </a>
@@ -64,27 +69,25 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground">
+        <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-background/60">
+          <p>
             {new Date().getFullYear()} OBRIYM. Tutti i diritti riservati.
           </p>
           <div className="flex items-center gap-4">
             <Link
               href="/privacy-policy"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-background/60 hover:text-background transition-colors"
             >
               Privacy Policy
             </Link>
             <Link
               href="/cookie-policy"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-background/60 hover:text-background transition-colors"
             >
               Cookie Policy
             </Link>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Fatto con amore in Ucraina
-          </p>
+          <p>Fatto con amore in Ucraina</p>
         </div>
       </div>
     </footer>

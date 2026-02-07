@@ -37,25 +37,34 @@ export function Services() {
   return (
     <section id="services" className="py-24 md:py-32 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl mb-16">
-          <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-12 items-end mb-16">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-4">
             I nostri servizi
           </p>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6">
-            Gamma completa di soluzioni web
-          </h2>
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            {"Dall'idea alla realizzazione, ti accompagniamo in ogni fase del progetto."}
-          </p>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight mb-6">
+              Soluzioni digitali su misura, senza compromessi
+            </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed max-w-xl">
+              {"Dall'idea alla realizzazione, ti accompagniamo in ogni fase del progetto."}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border bg-gradient-to-br from-secondary via-white to-white p-6">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Uniamo design elegante, sviluppo solido e strategia SEO per creare esperienze che
+              elevano il tuo brand e generano risultati misurabili.
+            </p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service) => (
             <div
               key={service.title}
-              className="group p-8 bg-card border border-border rounded-lg hover:border-foreground/20 transition-all duration-300"
+              className="group relative p-8 bg-card border border-border rounded-2xl hover:border-foreground/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,15,15,0.12)]"
             >
-              <div className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center mb-6 group-hover:bg-foreground group-hover:text-background transition-colors duration-300">
+              <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[linear-gradient(135deg,rgba(124,168,255,0.2),transparent_45%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <div className="w-12 h-12 bg-secondary rounded-xl flex items-center justify-center mb-6 group-hover:bg-foreground group-hover:text-background transition-colors duration-300">
                 <service.icon className="h-6 w-6" />
               </div>
               <h3 className="text-xl font-semibold mb-3">{service.title}</h3>

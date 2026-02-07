@@ -79,14 +79,14 @@ export function Contact() {
   };
 
   return (
-    <section id="contact" className="py-24 md:py-32 bg-foreground text-background">
+    <section id="contact" className="py-24 md:py-32 bg-[radial-gradient(circle_at_top,_#1b1b26,_#0b0b12_50%,_#07070c_100%)] text-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           <div>
-            <p className="text-sm uppercase tracking-[0.2em] text-background/60 mb-4">
+            <p className="text-xs uppercase tracking-[0.3em] text-background/60 mb-4">
               Contattaci
             </p>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight mb-6">
               Hai un progetto? <br />
               Parliamone!
             </h2>
@@ -116,7 +116,8 @@ export function Contact() {
             </div>
           </div>
 
-          <div className="bg-background/5 rounded-lg p-8 border border-background/10">
+          <div className="relative bg-white/5 rounded-2xl p-8 border border-white/10 overflow-hidden backdrop-blur">
+            <div className="pointer-events-none absolute -top-24 right-0 h-56 w-56 rounded-full bg-[radial-gradient(circle,_rgba(124,168,255,0.35),_transparent_70%)] blur-3xl motion-safe:animate-float-slow" />
             <form onSubmit={handleSubmit} className="space-y-6">
               {message && (
                 <div

@@ -22,20 +22,19 @@ export function Projects({ projects }: ProjectsProps) {
   return (
     <section id="projects" className="py-24 md:py-32 bg-secondary overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 items-end">
           <div className="max-w-2xl">
-            <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground mb-4">
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-4">
               I nostri progetti
             </p>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
-              Lavori selezionati
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight">
+              Case study selezionati
             </h2>
-          </div>
-          <div className="flex items-center gap-4">
-            <p className="text-muted-foreground max-w-md hidden md:block">
-              Ogni progetto è una soluzione unica, creata per raggiungere gli
-              obiettivi di business del cliente.
+            <p className="mt-6 text-lg text-muted-foreground">
+              Una combinazione di performance, design e storytelling digitale per clienti che vogliono distinguersi.
             </p>
+          </div>
+          <div className="flex items-center gap-4 justify-start lg:justify-end">
             <div className="flex gap-2">
               <button
                 type="button"
@@ -89,7 +88,7 @@ export function Projects({ projects }: ProjectsProps) {
                   href={project.website_url || "#"}
                   target={project.website_url ? "_blank" : undefined}
                   rel={project.website_url ? "noopener noreferrer" : undefined}
-                  className="group relative bg-card rounded-xl overflow-hidden cursor-pointer block"
+                  className="group relative bg-card rounded-2xl overflow-hidden cursor-pointer block transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_28px_70px_rgba(15,15,15,0.2)]"
                   onMouseEnter={() => setHoveredId(project.id)}
                   onMouseLeave={() => setHoveredId(null)}
                 >
@@ -110,6 +109,7 @@ export function Projects({ projects }: ProjectsProps) {
                   </div>
 
                   <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/80 transition-colors duration-300" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(120,231,255,0.25),transparent_45%)] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                   <div className="absolute inset-0 p-6 flex flex-col justify-end">
                     <div
