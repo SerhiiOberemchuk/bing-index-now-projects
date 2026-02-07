@@ -53,8 +53,9 @@ export function Services() {
           {services.map((service) => (
             <div
               key={service.title}
-              className="group p-8 bg-card border border-border rounded-lg hover:border-foreground/20 transition-all duration-300"
+              className="group relative p-8 bg-card border border-border rounded-lg hover:border-foreground/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,15,15,0.12)]"
             >
+              <div className="pointer-events-none absolute inset-0 rounded-lg bg-[linear-gradient(135deg,rgba(120,231,255,0.12),transparent_40%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               <div className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center mb-6 group-hover:bg-foreground group-hover:text-background transition-colors duration-300">
                 <service.icon className="h-6 w-6" />
               </div>

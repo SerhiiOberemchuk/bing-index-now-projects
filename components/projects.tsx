@@ -89,7 +89,7 @@ export function Projects({ projects }: ProjectsProps) {
                   href={project.website_url || "#"}
                   target={project.website_url ? "_blank" : undefined}
                   rel={project.website_url ? "noopener noreferrer" : undefined}
-                  className="group relative bg-card rounded-xl overflow-hidden cursor-pointer block"
+                  className="group relative bg-card rounded-xl overflow-hidden cursor-pointer block transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(15,15,15,0.18)]"
                   onMouseEnter={() => setHoveredId(project.id)}
                   onMouseLeave={() => setHoveredId(null)}
                 >
@@ -110,6 +110,7 @@ export function Projects({ projects }: ProjectsProps) {
                   </div>
 
                   <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/80 transition-colors duration-300" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(120,231,255,0.25),transparent_45%)] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                   <div className="absolute inset-0 p-6 flex flex-col justify-end">
                     <div

@@ -39,7 +39,7 @@ export function Process() {
               key={step.number}
               className="relative group"
             >
-              <div className="p-8 border border-border rounded-lg bg-card hover:border-foreground/20 transition-colors duration-300 h-full">
+              <div className="p-8 border border-border rounded-lg bg-card hover:border-foreground/20 transition-all duration-300 h-full hover:-translate-y-1 hover:shadow-[0_18px_50px_rgba(15,15,15,0.12)]">
                 <span className="text-6xl md:text-7xl font-bold text-muted/30 group-hover:text-foreground/10 transition-colors duration-300">
                   {step.number}
                 </span>
@@ -50,7 +50,7 @@ export function Process() {
               </div>
               
               {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-px bg-border" />
+                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-px bg-gradient-to-r from-border to-transparent" />
               )}
             </div>
           ))}
