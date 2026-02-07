@@ -116,7 +116,8 @@ export function Contact() {
             </div>
           </div>
 
-          <div className="bg-background/5 rounded-lg p-8 border border-background/10">
+          <div className="relative bg-background/5 rounded-lg p-8 border border-background/10 overflow-hidden">
+            <div className="pointer-events-none absolute -top-20 right-0 h-56 w-56 rounded-full bg-[radial-gradient(circle,_rgba(255,255,255,0.2),_transparent_70%)] blur-3xl motion-safe:animate-float-slow" />
             <form onSubmit={handleSubmit} className="space-y-6">
               {message && (
                 <div

@@ -15,13 +15,14 @@ export function JsonLd() {
     ],
     contactPoint: {
       "@type": "ContactPoint",
-      telephone: "+39-XXX-XXXXXXX",
+      telephone: "+39-351-664-8498",
       contactType: "customer service",
-      email: "info@obriym.online",
+      email: "info@obriym.com",
       availableLanguage: ["Italian"],
     },
     address: {
       "@type": "PostalAddress",
+      addressLocality: "Novara",
       addressCountry: "IT",
     },
   };
@@ -30,13 +31,14 @@ export function JsonLd() {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
     name: "OBRIYM - Agenzia Web",
-    image: "https://obriym.online/og-image.jpg",
+    image: "https://obriym.online/og-image.svg",
     url: "https://obriym.online",
-    telephone: "+39-XXX-XXXXXXX",
-    email: "info@obriym.online",
+    telephone: "+39-351-664-8498",
+    email: "info@obriym.com",
     priceRange: "€€",
     address: {
       "@type": "PostalAddress",
+      addressLocality: "Novara",
       addressCountry: "IT",
     },
     geo: {

@@ -8,19 +8,23 @@ export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-foreground text-background">
       <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:64px_64px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff10_1px,transparent_1px),linear-gradient(to_bottom,#ffffff10_1px,transparent_1px)] bg-[size:64px_64px] opacity-60" />
+        <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-[radial-gradient(circle,_rgba(255,255,255,0.2),_transparent_70%)] blur-3xl motion-safe:animate-float-slow" />
+        <div className="absolute bottom-10 right-0 h-72 w-72 rounded-full bg-[radial-gradient(circle,_rgba(120,231,255,0.35),_transparent_70%)] blur-3xl motion-safe:animate-float-medium" />
+        <div className="absolute top-1/3 right-1/3 h-48 w-48 rounded-full bg-[radial-gradient(circle,_rgba(166,255,203,0.25),_transparent_70%)] blur-3xl motion-safe:animate-float-fast" />
       </div>
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
         <div className="max-w-4xl">
-          <p className="text-sm uppercase tracking-[0.3em] text-background/60 mb-6">
+          <p className="text-sm uppercase tracking-[0.3em] text-background/60 mb-6 flex items-center gap-3">
+            <span className="inline-flex h-2 w-2 rounded-full bg-accent shadow-[0_0_16px_rgba(120,231,255,0.8)]" />
             Full-cycle web agency
           </p>
           
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight mb-8">
             <span className="text-background/40">OBRIYM</span>
             <br />
-            <span className="text-balance">
+            <span className="text-balance bg-[linear-gradient(90deg,#ffffff,#c7f9ff,#ffffff)] bg-[length:200%_200%] bg-clip-text text-transparent motion-safe:animate-gradient-shift">
               Dalla prima scintilla al lancio completo
             </span>
           </h1>
@@ -34,7 +38,7 @@ export function Hero() {
             <Button 
               asChild 
               size="lg" 
-              className="bg-background text-foreground hover:bg-background/90"
+              className="bg-background text-foreground hover:bg-background/90 shadow-[0_10px_40px_rgba(255,255,255,0.15)]"
             >
               <Link href="#contact" className="gap-2">
                 Discuti il progetto
