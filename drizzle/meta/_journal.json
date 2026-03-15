@@ -1,0 +1,76 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1773571177923,
+      "tag": "0000_eager_red_shift",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773573542959,
+      "tag": "0001_quiet_moonstone",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773597573821,
+      "tag": "0002_parched_champions",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1773598591716,
+      "tag": "0003_happy_boomerang",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1773604633062,
+      "tag": "0004_quiet_gateway",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1773606190305,
+      "tag": "0005_small_salo",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1773606492695,
+      "tag": "0006_flowery_purifiers",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1773606818905,
+      "tag": "0007_dapper_susan_delgado",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1773608564477,
+      "tag": "0008_hesitant_roland_deschain",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1773612366352,
+      "tag": "0009_famous_vindicator",
+      "breakpoints": true
+    }
+  ]
+}

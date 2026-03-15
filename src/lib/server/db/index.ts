@@ -4,9 +4,11 @@ import { drizzle } from 'drizzle-orm/neon-http';
 
 import * as schema from './schema';
 
-let dbInstance: ReturnType<typeof drizzle<typeof schema>> | null = null;
+export type DbClient = ReturnType<typeof drizzle<typeof schema>>;
 
-export function getDb() {
+let dbInstance: DbClient | null = null;
+
+export function getDb(): DbClient {
 	if (dbInstance) {
 		return dbInstance;
 	}
