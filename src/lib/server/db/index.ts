@@ -1,23 +1,25 @@
-import { env } from '$env/dynamic/private';
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
+import { env } from "$env/dynamic/private";
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
 
-import * as schema from './schema';
+import * as schema from "./schema";
 
-let dbInstance: ReturnType<typeof drizzle<typeof schema>> | null = null;
+export type DbClient = ReturnType<typeof drizzle<typeof schema>>;
 
-export function getDb() {
-	if (dbInstance) {
-		return dbInstance;
-	}
+let dbInstance: DbClient | null = null;
 
-	const databaseUrl = env.DATABASE_URL;
-	if (!databaseUrl) {
-		throw new Error('DATABASE_URL is not set.');
-	}
+export function getDb(): DbClient {
+  if (dbInstance) {
+    return dbInstance;
+  }
 
-	const sql = neon(databaseUrl);
-	dbInstance = drizzle(sql, { schema });
+  const databaseUrl = env.bing_DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL is not set.");
+  }
 
-	return dbInstance;
+  const sql = neon(databaseUrl);
+  dbInstance = drizzle(sql, { schema });
+
+  return dbInstance;
 }

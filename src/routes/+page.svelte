@@ -6,76 +6,129 @@
 	<title>IndexNow Control Center</title>
 </svelte:head>
 
-<main>
-	<section class="card">
-		<h1>IndexNow Control Center</h1>
-		<p>Base scaffold for client project management and Bing IndexNow URL submission.</p>
+<main class="wrap">
+	<section class="hero">
+		<div>
+			<p class="eyebrow">Platform</p>
+			<h1>IndexNow Control Center</h1>
+			<p class="lead">Manage project indexing, sitemap discovery, and submission history from one place.</p>
+		</div>
+		{#if data.user}
+			<a class="btn" href="/dashboard">Open dashboard</a>
+		{:else}
+			<div class="hero-actions">
+				<a class="btn" href="/sign-in">Sign in</a>
+				<a class="ghost" href="/sign-up">Create account</a>
+			</div>
+		{/if}
 	</section>
 
-	<section class="grid">
+	<section class="stats">
 		<article class="card">
-			<h2>Connection status</h2>
-			<p>{data.dbReady ? 'Database connected' : 'Database is not configured yet (check DATABASE_URL)'}</p>
+			<h2>Database</h2>
+			<p>{data.dbReady ? 'Connected' : 'Not configured'}</p>
 		</article>
-
 		<article class="card">
-			<h2>Total projects</h2>
+			<h2>Projects</h2>
 			<p>{data.projectCount}</p>
 		</article>
-	</section>
-
-	<section class="card">
-		<h2>API (MVP)</h2>
-		<ul>
-			<li><code>GET /api/health</code> - server and database health check</li>
-			<li><code>GET /api/projects</code> - list projects</li>
-			<li><code>POST /api/projects</code> - create project</li>
-			<li><code>POST /api/indexnow/submit</code> - submit URL list to Bing IndexNow</li>
-		</ul>
+		<article class="card">
+			<h2>Session</h2>
+			<p>{data.user ? 'Authenticated' : 'Guest'}</p>
+		</article>
 	</section>
 </main>
 
 <style>
-	:global(body) {
-		margin: 0;
-		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-		background: linear-gradient(140deg, #f5f7ff 0%, #edf2ff 100%);
-		color: #0f172a;
-	}
-
-	main {
-		max-width: 960px;
+	.wrap {
+		max-width: 980px;
 		margin: 0 auto;
-		padding: 2rem 1rem 4rem;
+		padding: 2rem 1rem 3rem;
 		display: grid;
 		gap: 1rem;
 	}
 
-	.grid {
+	.hero {
+		background: linear-gradient(125deg, #fdfefe 0%, #eaf3ff 100%);
+		border: 1px solid var(--border);
+		border-radius: 18px;
+		padding: 1.5rem;
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		align-items: end;
+	}
+
+	.hero-actions {
+		display: flex;
+		gap: 0.6rem;
+	}
+
+	.eyebrow {
+		margin: 0;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		font-size: 0.78rem;
+		color: var(--text-soft);
+	}
+
+	h1 {
+		margin: 0.35rem 0 0.5rem;
+	}
+
+	.lead {
+		margin: 0;
+		color: var(--text-soft);
+	}
+
+	.btn,
+	.ghost {
+		text-decoration: none;
+		padding: 0.65rem 1rem;
+		border-radius: 10px;
+		font-weight: 600;
+		white-space: nowrap;
+	}
+
+	.btn {
+		background: var(--brand);
+		color: #fff;
+	}
+
+	.ghost {
+		border: 1px solid var(--border);
+		background: var(--surface);
+	}
+
+	.stats {
 		display: grid;
 		gap: 1rem;
 		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 	}
 
 	.card {
-		background: #ffffff;
-		border-radius: 12px;
-		padding: 1.25rem;
-		box-shadow: 0 10px 35px rgba(15, 23, 42, 0.08);
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 14px;
+		padding: 1rem 1.1rem;
 	}
 
-	h1,
 	h2 {
-		margin: 0 0 0.75rem;
+		margin: 0 0 0.45rem;
+		font-size: 0.95rem;
+		color: var(--text-soft);
 	}
 
-	p,
-	li {
-		line-height: 1.5;
-	}
-
-	ul {
+	.card p {
 		margin: 0;
-		padding-left: 1.25rem;
+		font-size: 1.45rem;
+		font-weight: 700;
+	}
+
+	@media (max-width: 700px) {
+		.hero {
+			align-items: start;
+			flex-direction: column;
+		}
 	}
 </style>
