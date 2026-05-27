@@ -2,6 +2,7 @@
 	import { navigating, page } from '$app/state';
 	import brandMark from '$lib/assets/brand-mark.svg';
 	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
+	import DashboardSkeleton from '$lib/components/DashboardSkeleton.svelte';
 
 	let { data, children } = $props();
 	const isNavigating = $derived(Boolean(navigating.to));
@@ -55,9 +56,7 @@
 				<a
 					class:active={isActive(item.href)}
 					class:pending={isPending(item.href)}
-					class:disabled={isNavigating && !isPending(item.href)}
 					href={item.href}
-					aria-disabled={isNavigating && !isPending(item.href)}
 					aria-label={linkLabel(item.href, item.label)}
 				>
 					<span>{item.label}</span>
@@ -96,18 +95,12 @@
 			</div>
 		</header>
 
-		<main aria-busy={isNavigating}>
+		<main aria-busy={isNavigating} aria-live="polite">
 			{#if isNavigating}
-				<div class="page-loading" role="status" aria-live="polite">
-					<div>
-						<span class="page-spinner" aria-hidden="true"></span>
-						Loading page
-					</div>
-				</div>
-			{/if}
-			<div class:content-pending={isNavigating}>
+				<DashboardSkeleton path={pendingPath ?? '/dashboard'} />
+			{:else}
 				{@render children()}
-			</div>
+			{/if}
 		</main>
 	</div>
 </div>
@@ -186,24 +179,16 @@
 		color: #ffffff;
 	}
 
-	nav a.disabled {
-		opacity: 0.55;
-		pointer-events: none;
-	}
-
 	nav a.pending {
 		background: #123362;
 		color: #ffffff;
 	}
 
 	.nav-spinner,
-	.page-spinner {
+	.nav-spinner {
 		display: inline-block;
 		border-radius: 50%;
 		animation: spin 0.8s linear infinite;
-	}
-
-	.nav-spinner {
 		width: 0.85rem;
 		height: 0.85rem;
 		border: 2px solid rgba(255, 255, 255, 0.35);
@@ -287,64 +272,6 @@
 		overscroll-behavior: contain;
 	}
 
-	.page-loading {
-		position: sticky;
-		top: 0;
-		z-index: 8;
-		margin-bottom: 0.75rem;
-		padding: 0.7rem 0.8rem;
-		border: 1px solid #cad6f2;
-		border-radius: 8px;
-		background: #f7f9ff;
-		color: #35558c;
-		font-weight: 700;
-	}
-
-	.page-loading div {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	.page-spinner {
-		width: 1rem;
-		height: 1rem;
-		border: 2px solid rgba(53, 85, 140, 0.25);
-		border-top-color: #35558c;
-	}
-
-	.content-pending {
-		pointer-events: none;
-		user-select: none;
-		opacity: 0.62;
-	}
-
-	.content-pending :global(.panel),
-	.content-pending :global(.project-card),
-	.content-pending :global(.submission),
-	.content-pending :global(.alert-card),
-	.content-pending :global(.run),
-	.content-pending :global(.summary article),
-	.content-pending :global(.command-center) {
-		position: relative;
-		overflow: hidden;
-	}
-
-	.content-pending :global(.panel)::after,
-	.content-pending :global(.project-card)::after,
-	.content-pending :global(.submission)::after,
-	.content-pending :global(.alert-card)::after,
-	.content-pending :global(.run)::after,
-	.content-pending :global(.summary article)::after,
-	.content-pending :global(.command-center)::after {
-		content: '';
-		position: absolute;
-		inset: 0;
-		background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
-		transform: translateX(-100%);
-		animation: skeleton-shine 1.1s ease-in-out infinite;
-	}
-
 	.eyebrow {
 		margin: 0;
 		font-size: 0.75rem;
@@ -382,12 +309,6 @@
 	@keyframes spin {
 		to {
 			transform: rotate(360deg);
-		}
-	}
-
-	@keyframes skeleton-shine {
-		to {
-			transform: translateX(100%);
 		}
 	}
 
