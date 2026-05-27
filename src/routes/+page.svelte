@@ -1,4 +1,6 @@
 <script lang="ts">
+	import logo from '$lib/assets/logo.svg';
+
 	let { data } = $props();
 </script>
 
@@ -9,6 +11,7 @@
 <main class="wrap">
 	<section class="hero">
 		<div>
+			<img class="logo" src={logo} alt="IndexNow Control Center" width="320" height="72" />
 			<p class="eyebrow">Platform</p>
 			<h1>IndexNow Control Center</h1>
 			<p class="lead">Manage project indexing, sitemap discovery, and submission history from one place.</p>
@@ -62,6 +65,13 @@
 	.hero-actions {
 		display: flex;
 		gap: 0.6rem;
+	}
+
+	.logo {
+		display: block;
+		width: min(320px, 100%);
+		height: auto;
+		margin-bottom: 0.9rem;
 	}
 
 	.eyebrow {

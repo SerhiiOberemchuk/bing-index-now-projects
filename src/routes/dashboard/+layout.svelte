@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { navigating, page } from '$app/state';
+	import brandMark from '$lib/assets/brand-mark.svg';
 	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
 
 	let { data, children } = $props();
@@ -42,8 +43,11 @@
 <div class="app-shell">
 	<aside class="sidebar">
 		<div class="brand">
-			<p class="brand-top">IndexNow</p>
-			<p class="brand-bottom">Control Center</p>
+			<img src={brandMark} alt="" width="42" height="42" />
+			<div>
+				<p class="brand-top">IndexNow</p>
+				<p class="brand-bottom">Control Center</p>
+			</div>
 		</div>
 
 		<nav>
@@ -136,6 +140,14 @@
 
 	.brand {
 		padding: 0.25rem 0.5rem;
+		display: flex;
+		gap: 0.65rem;
+		align-items: center;
+	}
+
+	.brand img {
+		flex: 0 0 auto;
+		border-radius: 12px;
 	}
 
 	.brand-top {
