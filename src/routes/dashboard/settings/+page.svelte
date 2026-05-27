@@ -9,6 +9,13 @@
 	const isOwnerRow = (role: string) => role === 'owner';
 </script>
 
+<section class="page-head">
+	<div>
+		<h2>Settings</h2>
+		<p>Manage who can access the platform. Operational defaults are handled inside each project.</p>
+	</div>
+</section>
+
 <section class="grid">
 	<article class="panel">
 		<h2>Access control</h2>
@@ -83,29 +90,27 @@
 		{/if}
 	</article>
 
-	<article class="panel">
-		<h2>Defaults (planned)</h2>
-		<p class="note">Batch and retry settings are UI placeholders for next steps.</p>
-		<div class="field">
-			<label for="batch-size">Batch size</label>
-			<input id="batch-size" type="number" placeholder="500" disabled />
-		</div>
-		<div class="field">
-			<label for="retry-count">Retry count</label>
-			<input id="retry-count" type="number" placeholder="3" disabled />
-		</div>
-		<div class="field">
-			<label for="retry-delay">Retry delay (sec)</label>
-			<input id="retry-delay" type="number" placeholder="30" disabled />
-		</div>
-	</article>
 </section>
 
 <style>
+	.page-head {
+		margin-bottom: 0.85rem;
+	}
+
+	.page-head h2,
+	.page-head p {
+		margin: 0;
+	}
+
+	.page-head p {
+		margin-top: 0.35rem;
+		color: var(--text-soft);
+	}
+
 	.grid {
 		display: grid;
 		gap: 0.85rem;
-		grid-template-columns: 1.4fr 1fr;
+		grid-template-columns: 1fr;
 	}
 
 	.panel {
@@ -253,16 +258,6 @@
 
 	.lock {
 		font-size: 0.84rem;
-		color: var(--text-soft);
-	}
-
-	.field {
-		display: grid;
-		gap: 0.35rem;
-	}
-
-	label {
-		font-size: 0.86rem;
 		color: var(--text-soft);
 	}
 

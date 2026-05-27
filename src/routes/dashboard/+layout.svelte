@@ -6,6 +6,8 @@
 	const nav = () => [
 		{ href: '/dashboard', label: 'Overview' },
 		{ href: '/dashboard/projects', label: 'Projects' },
+		{ href: '/dashboard/submissions', label: 'Submissions' },
+		{ href: '/dashboard/automation', label: 'Automation' },
 		{
 			href: '/dashboard/alerts',
 			label: 'Alerts',
@@ -62,7 +64,6 @@
 				<h1>Dashboard</h1>
 			</div>
 			<div class="top-actions">
-				<a href="/" class="ghost">Landing</a>
 				<form method="POST" action="/sign-out">
 					<button class="danger" type="submit">Sign out</button>
 				</form>
@@ -227,7 +228,6 @@
 		font-size: 1.15rem;
 	}
 
-	.ghost,
 	.danger {
 		text-decoration: none;
 		padding: 0.5rem 0.8rem;
@@ -239,7 +239,6 @@
 		transition: filter 0.15s ease;
 	}
 
-	.ghost:hover,
 	.danger:hover {
 		filter: brightness(0.96);
 	}

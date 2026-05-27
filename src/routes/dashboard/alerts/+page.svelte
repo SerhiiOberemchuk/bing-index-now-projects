@@ -18,9 +18,11 @@
 	};
 </script>
 
-<section class="head">
-	<h2>Automation alerts</h2>
-	<p>Consolidated failures from automation runs, IndexNow submissions, and sitemap fetches.</p>
+<section class="page-head">
+	<div>
+		<h2>Alerts</h2>
+		<p>Problems that need a decision: acknowledge, resolve, or reopen.</p>
+	</div>
 </section>
 
 {#if form?.error}
@@ -51,154 +53,151 @@
 		</form>
 	</section>
 
-	<section class="stats">
-		<article><p>Total alerts</p><strong>{data.stats.total}</strong></article>
-		<article><p>Active</p><strong>{data.stats.active}</strong></article>
-		<article><p>Acknowledged</p><strong>{data.stats.acknowledged}</strong></article>
-		<article><p>Resolved</p><strong>{data.stats.resolved}</strong></article>
-		<article><p>Automation</p><strong>{data.stats.automation}</strong></article>
-		<article><p>Failed submissions</p><strong>{data.stats.submissions}</strong></article>
-		<article><p>Failed sitemaps</p><strong>{data.stats.sitemaps}</strong></article>
+	<section class="summary" aria-label="Alert summary">
+		<article class:attention={data.stats.active > 0}>
+			<p>Active</p>
+			<strong>{data.stats.active}</strong>
+		</article>
+		<article>
+			<p>Acknowledged</p>
+			<strong>{data.stats.acknowledged}</strong>
+		</article>
+		<article>
+			<p>Resolved</p>
+			<strong>{data.stats.resolved}</strong>
+		</article>
+		<article>
+			<p>Total</p>
+			<strong>{data.stats.total}</strong>
+		</article>
 	</section>
 
-	<section class="panel-grid">
-		<article class="panel">
-			<h3>Automation run errors</h3>
-			{#if data.automationAlerts.length === 0}
-				<p class="empty">No automation run errors found.</p>
-			{:else}
-				<ul>
-					{#each data.automationAlerts as row}
-						<li>
-							<div class="row-top">
-								<strong>{formatDateTime(row.createdAt)}</strong>
-								<div class="badges">
-									<span class="badge {row.type}">{row.type}</span>
-									<span class="status {row.status}">{row.status}</span>
-								</div>
-							</div>
-							<p class="meta">{row.projectName ?? row.projectId ?? 'Unknown project'} - {row.projectDomain ?? '-'}</p>
-							<ul class="error-list">
-								{#each row.errors.slice(0, 3) as err}
-									<li>{err}</li>
-								{/each}
-							</ul>
-							{#if row.note}
-								<p class="message"><strong>Note:</strong> {row.note}</p>
-							{/if}
-							<div class="actions">
-								{#if row.projectId}
-									<a href={`/dashboard/projects/${row.projectId}`}>Open project</a>
-									<a href={`/dashboard/projects/${row.projectId}/sitemap`}>Sitemap page</a>
-								{/if}
-								<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'acknowledged')}>
-									<input type="hidden" name="fingerprint" value={row.fingerprint} />
-									<input type="hidden" name="status" value="acknowledged" />
-									<button type="submit">Acknowledge</button>
-								</form>
-								<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'resolved')}>
-									<input type="hidden" name="fingerprint" value={row.fingerprint} />
-									<input type="hidden" name="status" value="resolved" />
-									<button type="submit" class="ok">Resolve</button>
-								</form>
-								<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'active')}>
-									<input type="hidden" name="fingerprint" value={row.fingerprint} />
-									<input type="hidden" name="status" value="active" />
-									<button type="submit" class="ghost">Reopen</button>
-								</form>
-							</div>
-						</li>
-					{/each}
-				</ul>
-			{/if}
-		</article>
+	<section class="alert-section">
+		<h3>Automation</h3>
+		{#if data.automationAlerts.length === 0}
+			<p class="empty">No automation alerts.</p>
+		{:else}
+			{#each data.automationAlerts as row}
+				<article class="alert-card">
+					<div class="row-top">
+						<div>
+							<strong>{row.projectName ?? row.projectId ?? 'Unknown project'}</strong>
+							<p>{row.projectDomain ?? '-'} - {formatDateTime(row.createdAt)}</p>
+						</div>
+						<span class="status {row.status}">{row.status}</span>
+					</div>
+					<ul class="error-list">
+						{#each row.errors.slice(0, 3) as err}
+							<li>{err}</li>
+						{/each}
+					</ul>
+					<div class="card-actions">
+						{#if row.projectId}
+							<a href={`/dashboard/projects/${row.projectId}`}>Project</a>
+						{/if}
+						<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'acknowledged')}>
+							<input type="hidden" name="fingerprint" value={row.fingerprint} />
+							<input type="hidden" name="status" value="acknowledged" />
+							<button type="submit">Acknowledge</button>
+						</form>
+						<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'resolved')}>
+							<input type="hidden" name="fingerprint" value={row.fingerprint} />
+							<input type="hidden" name="status" value="resolved" />
+							<button type="submit" class="ok">Resolve</button>
+						</form>
+					</div>
+				</article>
+			{/each}
+		{/if}
+	</section>
 
-		<article class="panel">
-			<h3>Failed IndexNow submissions</h3>
-			{#if data.failedSubmissions.length === 0}
-				<p class="empty">No failed submissions found.</p>
-			{:else}
-				<ul>
-					{#each data.failedSubmissions as row}
-						<li>
-							<div class="row-top">
-								<strong>{formatDateTime(row.createdAt)}</strong>
-								<div class="badges">
-									<span class="badge failed">HTTP {row.responseStatusCode ?? 'N/A'}</span>
-									<span class="status {row.status}">{row.status}</span>
-								</div>
-							</div>
-							<p class="meta">{row.projectDomain} - URLs: {row.urlCount}</p>
-							<p class="message">{shorten(row.responseBody)}</p>
-							{#if row.note}
-								<p class="message"><strong>Note:</strong> {row.note}</p>
-							{/if}
-							<div class="actions">
-								<a href={`/dashboard/projects/${row.projectId}`}>Open project</a>
-								<a href="/dashboard/submissions">Open submissions</a>
-								<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'acknowledged')}>
-									<input type="hidden" name="fingerprint" value={row.fingerprint} />
-									<input type="hidden" name="status" value="acknowledged" />
-									<button type="submit">Acknowledge</button>
-								</form>
-								<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'resolved')}>
-									<input type="hidden" name="fingerprint" value={row.fingerprint} />
-									<input type="hidden" name="status" value="resolved" />
-									<button type="submit" class="ok">Resolve</button>
-								</form>
-							</div>
-						</li>
-					{/each}
-				</ul>
-			{/if}
-		</article>
+	<section class="alert-section">
+		<h3>Failed submissions</h3>
+		{#if data.failedSubmissions.length === 0}
+			<p class="empty">No failed submissions.</p>
+		{:else}
+			{#each data.failedSubmissions as row}
+				<article class="alert-card">
+					<div class="row-top">
+						<div>
+							<strong>{row.projectDomain}</strong>
+							<p>{formatDateTime(row.createdAt)} - {row.urlCount} URLs - HTTP {row.responseStatusCode ?? 'N/A'}</p>
+						</div>
+						<span class="status {row.status}">{row.status}</span>
+					</div>
+					<p class="message">{shorten(row.responseBody)}</p>
+					<div class="card-actions">
+						<a href={`/dashboard/projects/${row.projectId}`}>Project</a>
+						<a href="/dashboard/submissions">Submissions</a>
+						<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'acknowledged')}>
+							<input type="hidden" name="fingerprint" value={row.fingerprint} />
+							<input type="hidden" name="status" value="acknowledged" />
+							<button type="submit">Acknowledge</button>
+						</form>
+						<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'resolved')}>
+							<input type="hidden" name="fingerprint" value={row.fingerprint} />
+							<input type="hidden" name="status" value="resolved" />
+							<button type="submit" class="ok">Resolve</button>
+						</form>
+					</div>
+				</article>
+			{/each}
+		{/if}
+	</section>
 
-		<article class="panel">
-			<h3>Failed sitemap fetches</h3>
-			{#if data.failedSitemaps.length === 0}
-				<p class="empty">No failed sitemap fetches found.</p>
-			{:else}
-				<ul>
-					{#each data.failedSitemaps as row}
-						<li>
-							<div class="row-top">
-								<strong>{formatDateTime(row.updatedAt)}</strong>
-								<div class="badges">
-									<span class="badge sitemap">sitemap</span>
-									<span class="status {row.status}">{row.status}</span>
-								</div>
-							</div>
-							<p class="meta">{row.projectDomain}</p>
-							<p class="message"><strong>{row.sitemapUrl}</strong></p>
-							<p class="message">{shorten(row.lastError)}</p>
-							{#if row.note}
-								<p class="message"><strong>Note:</strong> {row.note}</p>
-							{/if}
-							<div class="actions">
-								<a href={`/dashboard/projects/${row.projectId}/sitemap`}>Open sitemap page</a>
-								<a href={`/dashboard/projects/${row.projectId}`}>Open project</a>
-								<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'acknowledged')}>
-									<input type="hidden" name="fingerprint" value={row.fingerprint} />
-									<input type="hidden" name="status" value="acknowledged" />
-									<button type="submit">Acknowledge</button>
-								</form>
-								<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'resolved')}>
-									<input type="hidden" name="fingerprint" value={row.fingerprint} />
-									<input type="hidden" name="status" value="resolved" />
-									<button type="submit" class="ok">Resolve</button>
-								</form>
-							</div>
-						</li>
-					{/each}
-				</ul>
-			{/if}
-		</article>
+	<section class="alert-section">
+		<h3>Sitemap fetches</h3>
+		{#if data.failedSitemaps.length === 0}
+			<p class="empty">No failed sitemap fetches.</p>
+		{:else}
+			{#each data.failedSitemaps as row}
+				<article class="alert-card">
+					<div class="row-top">
+						<div>
+							<strong>{row.projectDomain}</strong>
+							<p>{formatDateTime(row.updatedAt)}</p>
+						</div>
+						<span class="status {row.status}">{row.status}</span>
+					</div>
+					<p class="message">{row.sitemapUrl}</p>
+					<p class="message">{shorten(row.lastError)}</p>
+					<div class="card-actions">
+						<a href={`/dashboard/projects/${row.projectId}/sitemap`}>Sitemap</a>
+						<a href={`/dashboard/projects/${row.projectId}`}>Project</a>
+						<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'acknowledged')}>
+							<input type="hidden" name="fingerprint" value={row.fingerprint} />
+							<input type="hidden" name="status" value="acknowledged" />
+							<button type="submit">Acknowledge</button>
+						</form>
+						<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'resolved')}>
+							<input type="hidden" name="fingerprint" value={row.fingerprint} />
+							<input type="hidden" name="status" value="resolved" />
+							<button type="submit" class="ok">Resolve</button>
+						</form>
+					</div>
+				</article>
+			{/each}
+		{/if}
 	</section>
 {/if}
 
 <style>
-	.head h2 { margin: 0; }
-	.head p { margin: 0.35rem 0 0; color: var(--text-soft); }
+	.page-head h2,
+	h3,
+	p {
+		margin: 0;
+	}
+
+	.page-head p,
+	.row-top p,
+	.message,
+	.empty {
+		color: var(--text-soft);
+	}
+
+	.page-head p {
+		margin-top: 0.35rem;
+	}
 
 	.note {
 		margin-top: 0.7rem;
@@ -210,23 +209,37 @@
 	.note.error { background: #ffe8e8; border: 1px solid #ffd0d0; color: var(--danger); }
 	.note.success { background: #e8f8ef; border: 1px solid #c7efd7; color: var(--ok); }
 
-	.filters {
-		margin-top: 0.8rem;
-		padding: 0.7rem;
-		border: 1px solid var(--border);
-		border-radius: 10px;
+	.filters,
+	.summary article,
+	.alert-card {
 		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 8px;
 	}
 
-	.filters-form {
+	.filters {
+		margin-top: 0.8rem;
+		padding: 0.75rem;
+	}
+
+	.filters-form,
+	.actions,
+	.card-actions {
 		display: flex;
-		gap: 0.55rem;
+		gap: 0.5rem;
 		align-items: end;
 		flex-wrap: wrap;
 	}
 
-	label { display: grid; gap: 0.25rem; }
-	label span { font-size: 0.84rem; color: var(--text-soft); }
+	label {
+		display: grid;
+		gap: 0.25rem;
+	}
+
+	label span {
+		font-size: 0.84rem;
+		color: var(--text-soft);
+	}
 
 	select,
 	button,
@@ -237,71 +250,74 @@
 		border: 1px solid var(--border);
 	}
 
-	button { background: #eef3ff; color: #35558c; border-color: #cad6f2; cursor: pointer; }
-	button.ok { background: #e8f8ef; border-color: #c7efd7; color: var(--ok); }
-	button.ghost { background: var(--surface-soft); color: inherit; }
-	a { text-decoration: none; background: var(--surface-soft); color: inherit; }
+	button {
+		background: #eef3ff;
+		color: #35558c;
+		border-color: #cad6f2;
+		cursor: pointer;
+	}
 
-	.stats {
+	button.ok {
+		background: #e8f8ef;
+		border-color: #c7efd7;
+		color: var(--ok);
+	}
+
+	a {
+		text-decoration: none;
+		background: var(--surface-soft);
+	}
+
+	.summary {
 		margin-top: 0.8rem;
 		display: grid;
-		gap: 0.7rem;
-		grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+		gap: 0.75rem;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
 	}
 
-	.stats article {
-		background: var(--surface);
-		border: 1px solid var(--border);
-		border-radius: 12px;
-		padding: 0.75rem;
+	.summary article {
+		padding: 0.8rem;
 	}
 
-	.stats p { margin: 0; font-size: 0.84rem; color: var(--text-soft); }
-	.stats strong { display: block; margin-top: 0.35rem; font-size: 1.1rem; }
+	.summary article.attention {
+		border-color: #ffd0d0;
+	}
 
-	.panel-grid {
-		margin-top: 0.8rem;
+	.summary p {
+		color: var(--text-soft);
+		font-size: 0.82rem;
+	}
+
+	.summary strong {
+		display: block;
+		margin-top: 0.25rem;
+		font-size: 1.35rem;
+	}
+
+	.alert-section {
+		margin-top: 0.9rem;
 		display: grid;
-		gap: 0.8rem;
-		grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+		gap: 0.6rem;
 	}
 
-	.panel {
-		background: var(--surface);
-		border: 1px solid var(--border);
-		border-radius: 12px;
-		padding: 0.85rem;
-	}
-
-	.panel h3 { margin: 0; font-size: 1rem; }
-
-	.panel ul {
-		list-style: none;
-		margin: 0.7rem 0 0;
-		padding: 0;
+	.alert-card {
+		padding: 0.8rem;
 		display: grid;
 		gap: 0.55rem;
-	}
-
-	.panel li {
-		border: 1px solid var(--border);
-		border-radius: 10px;
-		padding: 0.65rem;
 	}
 
 	.row-top {
 		display: flex;
 		justify-content: space-between;
-		gap: 0.5rem;
-		align-items: center;
+		align-items: start;
+		gap: 0.75rem;
 	}
 
-	.badges { display: flex; gap: 0.35rem; align-items: center; }
+	.row-top p {
+		margin-top: 0.25rem;
+		font-size: 0.86rem;
+	}
 
-	.meta { margin: 0.35rem 0 0; font-size: 0.85rem; color: var(--text-soft); }
-	.message { margin: 0.35rem 0 0; font-size: 0.85rem; word-break: break-word; }
-
-	.badge,
 	.status {
 		display: inline-block;
 		padding: 0.18rem 0.45rem;
@@ -310,33 +326,41 @@
 		text-transform: capitalize;
 	}
 
-	.badge.manual { background: #eef3ff; color: #35558c; }
-	.badge.cron { background: #e8f8ef; color: var(--ok); }
-	.badge.failed,
-	.badge.sitemap { background: #ffe8e8; color: var(--danger); }
-
 	.status.active { background: #fff4e8; color: var(--warn); }
 	.status.acknowledged { background: #eef3ff; color: #35558c; }
 	.status.resolved { background: #e8f8ef; color: var(--ok); }
 
 	.error-list {
-		margin: 0.45rem 0 0;
+		margin: 0;
 		padding-left: 1rem;
 		display: grid;
 		gap: 0.25rem;
 		color: var(--danger);
-		font-size: 0.84rem;
+		font-size: 0.86rem;
 	}
 
-	.actions {
-		margin-top: 0.55rem;
-		display: flex;
-		gap: 0.45rem;
-		flex-wrap: wrap;
-		align-items: center;
+	.message {
+		font-size: 0.86rem;
+		word-break: break-word;
 	}
 
-	.actions form { margin: 0; }
+	.card-actions form {
+		margin: 0;
+	}
 
-	.empty { margin: 0.7rem 0 0; color: var(--text-soft); }
+	.empty {
+		padding: 0.75rem;
+		border: 1px dashed var(--border);
+		border-radius: 8px;
+	}
+
+	@media (max-width: 760px) {
+		.summary {
+			grid-template-columns: 1fr;
+		}
+
+		.row-top {
+			flex-direction: column;
+		}
+	}
 </style>

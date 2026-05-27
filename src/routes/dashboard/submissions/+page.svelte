@@ -5,6 +5,11 @@
 	const formValue = (key: string, fallback = '') =>
 		((form as Record<string, unknown> | undefined)?.[key] as string | undefined) ?? fallback;
 
+	const successCount = $derived(data.submissions.filter((row) => row.status === 'success').length);
+	const successRate = $derived(
+		data.submissions.length > 0 ? Math.round((successCount / data.submissions.length) * 100) : 0
+	);
+
 	const formatDateTime = (value: string | Date | null) => {
 		if (!value) return 'N/A';
 		return new Date(value).toLocaleString();
@@ -18,13 +23,18 @@
 		}
 	};
 
+	const trim = (value: string | null, max = 220) => {
+		if (!value) return '(empty response body)';
+		return value.length > max ? `${value.slice(0, max)}...` : value;
+	};
+
 	const confirmRetry = (event: SubmitEvent) => {
 		if (!canManage()) {
 			event.preventDefault();
 			return;
 		}
 
-		if (!confirm('Retry this submission now?')) {
+		if (!confirm('Retry this failed submission now?')) {
 			event.preventDefault();
 		}
 	};
@@ -41,27 +51,19 @@
 	};
 </script>
 
-<section class="head">
-	<h2>Submissions log</h2>
-	<p>Latest 100 records from the database. Expand a row to view full Bing response and payload.</p>
-</section>
-
-<section class="bulk-panel">
-	<p>
-		Failed entries in current list: <strong>{data.failedInList}</strong>
-	</p>
-	<form method="POST" action="?/retryFailedRecent" onsubmit={confirmBulkRetry}>
-		<label>
-			Retry failed in last
-			<input name="limit" type="number" min="1" max="100" value={formValue('limit', '20')} disabled={!canManage()} />
-			records
-		</label>
-		<button type="submit" class="secondary" disabled={!canManage()}>Run bulk retry</button>
+<section class="page-head">
+	<div>
+		<h2>Submissions</h2>
+		<p>Recent IndexNow requests. Fix failed rows first; expand only when you need the payload.</p>
+	</div>
+	<form method="POST" action="?/retryFailedRecent" onsubmit={confirmBulkRetry} class="retry-all">
+		<input name="limit" type="number" min="1" max="100" value={formValue('limit', '20')} disabled={!canManage()} />
+		<button type="submit" disabled={!canManage() || data.failedInList === 0}>Retry failed</button>
 	</form>
 </section>
 
 {#if !canManage()}
-	<p class="feedback warn">You have read-only access. Retry actions are disabled for your role.</p>
+	<p class="feedback warn">Read-only access. Retry actions are disabled for your role.</p>
 {/if}
 
 {#if form?.error}
@@ -71,130 +73,139 @@
 	<p class="feedback success">{form.success}</p>
 {/if}
 
-{#if form?.retryResult}
-	<section class="retry-result">
-		<p><strong>Latest retry response</strong></p>
-		<pre>{stringify(form.retryResult)}</pre>
+<section class="summary" aria-label="Submission summary">
+	<article>
+		<p>Recent records</p>
+		<strong>{data.submissions.length}</strong>
+	</article>
+	<article class:attention={data.failedInList > 0}>
+		<p>Failed</p>
+		<strong>{data.failedInList}</strong>
+	</article>
+	<article>
+		<p>Success rate</p>
+		<strong>{data.submissions.length === 0 ? 'N/A' : `${successRate}%`}</strong>
+	</article>
+</section>
+
+{#if form?.retryResult || form?.bulkResult}
+	<section class="result-panel">
+		<h3>Latest retry result</h3>
+		<pre>{stringify(form.retryResult ?? form.bulkResult)}</pre>
 	</section>
 {/if}
 
-{#if form?.bulkResult}
-	<section class="retry-result">
-		<p><strong>Latest bulk retry response</strong></p>
-		<pre>{stringify(form.bulkResult)}</pre>
-	</section>
-{/if}
+<section class="submission-list">
+	{#if data.submissions.length === 0}
+		<p class="empty">No submissions yet.</p>
+	{:else}
+		{#each data.submissions as row}
+			<article class="submission" class:failed={row.status === 'failed'}>
+				<div class="row-main">
+					<div>
+						<h3>{row.projectDomain}</h3>
+						<p>{formatDateTime(row.createdAt)} - {row.urlCount} URL{row.urlCount === 1 ? '' : 's'}</p>
+					</div>
+					<div class="row-actions">
+						<span class="badge {row.status}">{row.status}</span>
+						{#if row.status === 'failed'}
+							<form method="POST" action="?/retrySubmission" onsubmit={confirmRetry}>
+								<input type="hidden" name="submissionId" value={row.id} />
+								<button type="submit" class="retry" disabled={!canManage()}>Retry</button>
+							</form>
+						{/if}
+						<a href={`/dashboard/projects/${row.projectId}`}>Project</a>
+					</div>
+				</div>
 
-<section class="table-wrap">
-	<table>
-		<thead>
-			<tr>
-				<th>Timestamp</th>
-				<th>Project</th>
-				<th>URLs</th>
-				<th>Status</th>
-				<th>HTTP</th>
-				<th>Action</th>
-				<th>Details</th>
-			</tr>
-		</thead>
-		<tbody>
-			{#if data.submissions.length === 0}
-				<tr>
-					<td colspan="7" class="empty">No submissions yet.</td>
-				</tr>
-			{:else}
-				{#each data.submissions as row}
-					<tr>
-						<td>{formatDateTime(row.createdAt)}</td>
-						<td><a href={`/dashboard/projects/${row.projectId}`}>{row.projectDomain}</a></td>
-						<td>{row.urlCount}</td>
-						<td><span class="badge {row.status}">{row.status}</span></td>
-						<td>{row.responseStatusCode ?? 'N/A'}</td>
-						<td>
-							{#if row.status === 'failed'}
-								<form method="POST" action="?/retrySubmission" onsubmit={confirmRetry}>
-									<input type="hidden" name="submissionId" value={row.id} />
-									<button type="submit" class="retry" disabled={!canManage()}>Retry failed</button>
-								</form>
-							{:else}
-								<span class="action-muted">-</span>
-							{/if}
-						</td>
-						<td>
-							<details>
-								<summary>View full response</summary>
-								<div class="details-content">
-									<p><strong>Submission ID:</strong> <code>{row.id}</code></p>
-									<p><strong>Full response body:</strong></p>
-									<pre>{row.responseBody ?? '(empty response body)'}</pre>
-									<p><strong>Sent payload:</strong></p>
-									<pre>{stringify(row.payload)}</pre>
-								</div>
-							</details>
-						</td>
-					</tr>
-				{/each}
-			{/if}
-		</tbody>
-	</table>
+				<div class="meta">
+					<span>HTTP: {row.responseStatusCode ?? 'N/A'}</span>
+					<span>{trim(row.responseBody)}</span>
+				</div>
+
+				<details>
+					<summary>Technical details</summary>
+					<div class="details-content">
+						<p><strong>Submission ID:</strong> <code>{row.id}</code></p>
+						<p><strong>Full response body:</strong></p>
+						<pre>{row.responseBody ?? '(empty response body)'}</pre>
+						<p><strong>Sent payload:</strong></p>
+						<pre>{stringify(row.payload)}</pre>
+					</div>
+				</details>
+			</article>
+		{/each}
+	{/if}
 </section>
 
 <style>
-	.head h2 {
-		margin: 0;
-	}
-
-	.head p {
-		margin: 0.35rem 0 0;
-		color: var(--text-soft);
-	}
-
-	.bulk-panel {
-		margin-top: 0.8rem;
-		padding: 0.7rem;
-		background: var(--surface);
-		border: 1px solid var(--border);
-		border-radius: 10px;
+	.page-head {
 		display: flex;
 		justify-content: space-between;
-		align-items: center;
-		gap: 0.6rem;
-		flex-wrap: wrap;
+		align-items: end;
+		gap: 0.8rem;
 	}
 
-	.bulk-panel p {
+	h2,
+	h3,
+	p {
 		margin: 0;
+	}
+
+	.page-head p,
+	.meta,
+	.empty {
 		color: var(--text-soft);
 	}
 
-	.bulk-panel form {
+	.page-head p {
+		margin-top: 0.35rem;
+	}
+
+	.retry-all {
 		display: flex;
-		align-items: center;
 		gap: 0.45rem;
-		flex-wrap: wrap;
-	}
-
-	.bulk-panel label {
-		display: flex;
 		align-items: center;
-		gap: 0.35rem;
-		font-size: 0.88rem;
 	}
 
-	.bulk-panel input {
-		width: 84px;
-		padding: 0.42rem 0.5rem;
-		border: 1px solid var(--border);
-		border-radius: 8px;
+	input,
+	button,
+	a {
 		font: inherit;
+		border-radius: 8px;
+		border: 1px solid var(--border);
+	}
+
+	input {
+		width: 82px;
+		padding: 0.5rem 0.55rem;
+	}
+
+	button,
+	a {
+		padding: 0.52rem 0.72rem;
+		text-decoration: none;
+		background: var(--surface-soft);
+		cursor: pointer;
+	}
+
+	button {
+		background: var(--brand);
+		border-color: var(--brand);
+		color: #fff;
+		font-weight: 700;
+	}
+
+	button:disabled,
+	input:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
 	}
 
 	.feedback {
-		margin-top: 0.8rem;
+		margin-top: 0.75rem;
 		padding: 0.55rem 0.7rem;
 		border-radius: 8px;
-		font-size: 0.92rem;
 	}
 
 	.feedback.warn {
@@ -215,66 +226,106 @@
 		color: var(--ok);
 	}
 
-	.retry-result {
+	.summary {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.75rem;
 		margin-top: 0.8rem;
+	}
+
+	.summary article,
+	.result-panel,
+	.submission {
 		background: var(--surface);
 		border: 1px solid var(--border);
-		border-radius: 10px;
-		padding: 0.7rem;
+		border-radius: 8px;
 	}
 
-	.retry-result p {
-		margin: 0 0 0.4rem;
+	.summary article {
+		padding: 0.8rem;
 	}
 
-	.retry-result pre {
-		margin: 0;
+	.summary article.attention,
+	.submission.failed {
+		border-color: #ffd0d0;
 	}
 
-	.table-wrap {
-		margin-top: 0.9rem;
-		background: var(--surface);
-		border: 1px solid var(--border);
-		border-radius: 14px;
-		overflow: auto;
-	}
-
-	table {
-		width: 100%;
-		border-collapse: collapse;
-		min-width: 1140px;
-	}
-
-	th,
-	td {
-		padding: 0.75rem;
-		border-bottom: 1px solid var(--border);
-		text-align: left;
-		vertical-align: top;
-	}
-
-	th {
-		font-size: 0.8rem;
+	.summary p {
 		color: var(--text-soft);
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
+		font-size: 0.82rem;
 	}
 
-	tbody tr:last-child td {
-		border-bottom: 0;
+	.summary strong {
+		display: block;
+		margin-top: 0.25rem;
+		font-size: 1.35rem;
+	}
+
+	.result-panel {
+		margin-top: 0.8rem;
+		padding: 0.85rem;
+	}
+
+	.submission-list {
+		margin-top: 0.8rem;
+		display: grid;
+		gap: 0.65rem;
 	}
 
 	.empty {
-		text-align: center;
+		padding: 0.8rem;
+		border: 1px dashed var(--border);
+		border-radius: 8px;
+	}
+
+	.submission {
+		padding: 0.85rem;
+		display: grid;
+		gap: 0.65rem;
+	}
+
+	.row-main,
+	.row-actions,
+	.meta {
+		display: flex;
+		gap: 0.55rem;
+	}
+
+	.row-main {
+		justify-content: space-between;
+		align-items: start;
+	}
+
+	.row-main h3 {
+		font-size: 1rem;
+	}
+
+	.row-main p {
+		margin-top: 0.25rem;
 		color: var(--text-soft);
+	}
+
+	.row-actions {
+		align-items: center;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+	}
+
+	.row-actions form {
+		margin: 0;
+	}
+
+	.meta {
+		flex-direction: column;
+		font-size: 0.88rem;
 	}
 
 	.badge {
 		display: inline-block;
-		text-transform: capitalize;
-		padding: 0.17rem 0.5rem;
+		padding: 0.2rem 0.5rem;
 		border-radius: 999px;
 		font-size: 0.78rem;
+		text-transform: capitalize;
 	}
 
 	.badge.success {
@@ -287,35 +338,10 @@
 		color: var(--danger);
 	}
 
-	button.secondary,
 	.retry {
-		font: inherit;
-		padding: 0.45rem 0.65rem;
-		border-radius: 8px;
-		cursor: pointer;
-	}
-
-	button.secondary {
-		border: 1px solid #cad6f2;
-		background: #eef3ff;
-		color: #35558c;
-	}
-
-	.retry {
-		border: 1px solid #fac5bf;
 		background: #fff1f0;
+		border-color: #fac5bf;
 		color: #9f2418;
-	}
-
-	.retry:disabled,
-	button.secondary:disabled,
-	.bulk-panel input:disabled {
-		opacity: 0.6;
-		cursor: not-allowed;
-	}
-
-	.action-muted {
-		color: var(--text-soft);
 	}
 
 	summary {
@@ -330,7 +356,6 @@
 	}
 
 	.details-content p {
-		margin: 0;
 		font-size: 0.86rem;
 	}
 
@@ -341,7 +366,22 @@
 		background: #f5f7fc;
 		white-space: pre-wrap;
 		word-break: break-word;
-		max-width: 520px;
 		font-size: 0.78rem;
+	}
+
+	@media (max-width: 760px) {
+		.page-head,
+		.row-main {
+			align-items: stretch;
+			flex-direction: column;
+		}
+
+		.summary {
+			grid-template-columns: 1fr;
+		}
+
+		.row-actions {
+			justify-content: flex-start;
+		}
 	}
 </style>
