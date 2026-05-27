@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
+
 	let { data, form } = $props();
 
 	const formatDateTime = (value: string | Date | null) => {
@@ -8,6 +10,7 @@
 
 	const inviteLink = (token: string) => `${data.signUpBaseUrl}?invite=${token}`;
 	const isExpired = (value: string | Date | null) => (value ? new Date(value).getTime() < Date.now() : false);
+	const revokeId = (id: string) => `revokeInvite:${id}`;
 </script>
 
 <section class="head">
@@ -19,13 +22,15 @@
 	<p class="feedback error">Only owner can manage invites.</p>
 {:else}
 	<section class="panel">
-		<form method="POST" action="?/createInvite" class="create-form">
-			<input type="email" name="email" placeholder="user@example.com" required />
-			<select name="role">
+		<form method="POST" action="?/createInvite" class="create-form" use:managedForm={{ id: 'createInvite', label: 'Create invite' }}>
+			<input type="email" name="email" placeholder="user@example.com" required disabled={isFormBusy('createInvite')} />
+			<select name="role" disabled={isFormBusy('createInvite')}>
 				<option value="viewer">viewer</option>
 				<option value="manager">manager</option>
 			</select>
-			<button type="submit" class="primary">Create invite</button>
+			<button type="submit" class="primary" disabled={isFormBusy('createInvite')}>
+				{isFormBusy('createInvite') ? 'Creating...' : 'Create invite'}
+			</button>
 		</form>
 	</section>
 
@@ -64,9 +69,23 @@
 							<td><code>{inviteLink(row.token)}</code></td>
 							<td>
 								{#if !row.usedAt && !row.revokedAt}
-									<form method="POST" action="?/revokeInvite">
+									<form
+										method="POST"
+										action="?/revokeInvite"
+										use:managedForm={{
+											id: revokeId(row.id),
+											label: 'Revoke invite',
+											confirm: {
+												title: 'Revoke this invite?',
+												description: row.email,
+												actionLabel: 'Revoke'
+											}
+										}}
+									>
 										<input type="hidden" name="inviteId" value={row.id} />
-										<button type="submit" class="danger">Revoke</button>
+										<button type="submit" class="danger" disabled={isFormBusy(revokeId(row.id))}>
+											{isFormBusy(revokeId(row.id)) ? 'Revoking...' : 'Revoke'}
+										</button>
 									</form>
 								{:else}
 									<span class="muted">-</span>

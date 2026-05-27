@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
+
 	let { data, form } = $props();
 	const tokenValue = () => ((form?.inviteToken as string | undefined) ?? data.inviteToken ?? '').trim();
 </script>
@@ -12,37 +14,37 @@
 		<h1>Create account</h1>
 		<p>Use your invite token to register. After email verification, account stays pending until owner approval.</p>
 
-		<form method="POST">
+		<form method="POST" use:managedForm={{ id: 'signUp', label: 'Create account' }}>
 			<label>
 				Invite token
-				<input type="text" name="inviteToken" value={tokenValue()} autocomplete="off" required />
+				<input type="text" name="inviteToken" value={tokenValue()} autocomplete="off" required disabled={isFormBusy('signUp')} />
 			</label>
 
 			<label>
 				Name
-				<input type="text" name="name" value={form?.name ?? ''} autocomplete="name" required />
+				<input type="text" name="name" value={form?.name ?? ''} autocomplete="name" required disabled={isFormBusy('signUp')} />
 			</label>
 
 			<label>
 				Email
-				<input type="email" name="email" value={form?.email ?? ''} autocomplete="email" required />
+				<input type="email" name="email" value={form?.email ?? ''} autocomplete="email" required disabled={isFormBusy('signUp')} />
 			</label>
 
 			<label>
 				Password
-				<input type="password" name="password" autocomplete="new-password" required />
+				<input type="password" name="password" autocomplete="new-password" required disabled={isFormBusy('signUp')} />
 			</label>
 
 			<label>
 				Confirm password
-				<input type="password" name="confirmPassword" autocomplete="new-password" required />
+				<input type="password" name="confirmPassword" autocomplete="new-password" required disabled={isFormBusy('signUp')} />
 			</label>
 
 			{#if form?.error}
 				<p class="error">{form.error}</p>
 			{/if}
 
-			<button type="submit">Create account</button>
+			<button type="submit" disabled={isFormBusy('signUp')}>{isFormBusy('signUp') ? 'Creating...' : 'Create account'}</button>
 		</form>
 
 		<p class="helper">

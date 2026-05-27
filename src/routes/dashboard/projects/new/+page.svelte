@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
+
 	let { form, data } = $props();
 
 	const formValue = (key: string) =>
@@ -24,12 +26,12 @@
 	<h2>Create project</h2>
 	<p>Create a real project record in Neon database.</p>
 
-	<form method="POST">
+	<form method="POST" use:managedForm={{ id: 'createProject', label: 'Create project' }}>
 		<label for="name">Project name</label>
-		<input id="name" name="name" type="text" placeholder="Acme Europe" value={formValue('name')} />
+		<input id="name" name="name" type="text" placeholder="Acme Europe" value={formValue('name')} disabled={isFormBusy('createProject')} />
 
 		<label for="domain">Primary domain</label>
-		<input id="domain" name="domain" type="text" placeholder="acme.com" value={formValue('domain')} />
+		<input id="domain" name="domain" type="text" placeholder="acme.com" value={formValue('domain')} disabled={isFormBusy('createProject')} />
 
 		<label for="indexNowKey">IndexNow key</label>
 		<input
@@ -38,10 +40,11 @@
 			type="text"
 			placeholder="your-indexnow-key"
 			value={formValue('indexNowKey')}
+			disabled={isFormBusy('createProject')}
 		/>
 
 		<label for="schedule">Automation schedule</label>
-		<select id="schedule" name="schedule" value={scheduleValue()}>
+		<select id="schedule" name="schedule" value={scheduleValue()} disabled={isFormBusy('createProject')}>
 			{#each data.scheduleOptions as option}
 				<option value={option}>{scheduleLabel(option)}</option>
 			{/each}
@@ -52,7 +55,9 @@
 		{/if}
 
 		<div class="actions">
-			<button type="submit" class="primary">Save project</button>
+			<button type="submit" class="primary" disabled={isFormBusy('createProject')}>
+				{isFormBusy('createProject') ? 'Saving...' : 'Save project'}
+			</button>
 			<a href="/dashboard/projects">Cancel</a>
 		</div>
 	</form>

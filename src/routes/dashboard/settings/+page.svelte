@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
+
 	let { data, form } = $props();
 
 	const formatDateTime = (value: string | Date | null) => {
@@ -7,6 +9,8 @@
 	};
 
 	const isOwnerRow = (role: string) => role === 'owner';
+	const approvalId = (userId: string) => `approval:${userId}`;
+	const roleId = (userId: string) => `role:${userId}`;
 </script>
 
 <section class="page-head">
@@ -28,8 +32,10 @@
 				<span class="chip warn">Pending verified: {data.stats.pendingVerified}</span>
 				<span class="chip muted">Pending unverified: {data.stats.pendingUnverified}</span>
 				<span class="chip success">Approved: {data.stats.approved}</span>
-				<form method="POST" action="?/approveAllVerified">
-					<button type="submit" class="secondary" disabled={data.stats.pendingVerified === 0}>Approve all verified</button>
+				<form method="POST" action="?/approveAllVerified" use:managedForm={{ id: 'approveAllVerified', label: 'Approve all verified users' }}>
+					<button type="submit" class="secondary" disabled={data.stats.pendingVerified === 0 || isFormBusy('approveAllVerified')}>
+						{isFormBusy('approveAllVerified') ? 'Approving...' : 'Approve all verified'}
+					</button>
 				</form>
 			</div>
 
@@ -65,18 +71,22 @@
 											<span class="lock">Owner</span>
 										{:else}
 											<div class="actions-col">
-												<form method="POST" action="?/updateApproval" class="inline-form">
+												<form method="POST" action="?/updateApproval" class="inline-form" use:managedForm={{ id: approvalId(row.id), label: 'Update user approval' }}>
 													<input type="hidden" name="userId" value={row.id} />
 													<input type="hidden" name="approved" value={row.approved ? 'false' : 'true'} />
-													<button type="submit" class={row.approved ? 'danger' : 'secondary'}>{row.approved ? 'Revoke' : 'Approve'}</button>
+													<button type="submit" class={row.approved ? 'danger' : 'secondary'} disabled={isFormBusy(approvalId(row.id))}>
+														{isFormBusy(approvalId(row.id)) ? 'Saving...' : row.approved ? 'Revoke' : 'Approve'}
+													</button>
 												</form>
-												<form method="POST" action="?/updateRole" class="inline-form">
+												<form method="POST" action="?/updateRole" class="inline-form" use:managedForm={{ id: roleId(row.id), label: 'Update user role' }}>
 													<input type="hidden" name="userId" value={row.id} />
-													<select name="role">
+													<select name="role" disabled={isFormBusy(roleId(row.id))}>
 														<option value="manager" selected={row.role === 'manager'}>manager</option>
 														<option value="viewer" selected={row.role === 'viewer'}>viewer</option>
 													</select>
-													<button type="submit" class="primary">Role</button>
+													<button type="submit" class="primary" disabled={isFormBusy(roleId(row.id))}>
+														{isFormBusy(roleId(row.id)) ? 'Saving...' : 'Role'}
+													</button>
 												</form>
 											</div>
 										{/if}

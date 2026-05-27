@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
+
 	let { data, form } = $props();
 	const canManage = () => Boolean(data.canManage);
 	const formValue = (key: string) =>
@@ -79,8 +81,8 @@
 	</div>
 	<div class="head-actions">
 		<span class="status {data.project.status}">{data.project.status}</span>
-		<form method="POST" action="?/toggleStatus">
-			<button class="toggle" type="submit" disabled={!canManage()}>
+		<form method="POST" action="?/toggleStatus" use:managedForm={{ id: 'toggleStatus', label: 'Update project status' }}>
+			<button class="toggle" type="submit" disabled={!canManage() || isFormBusy('toggleStatus')}>
 				{data.project.status === 'active' ? 'Pause project' : 'Resume project'}
 			</button>
 		</form>
@@ -174,14 +176,16 @@
 	<article class="panel">
 		<h3>Submit URLs to Bing IndexNow</h3>
 		<p class="muted">Paste one URL per line or separate by comma.</p>
-		<form method="POST" action="?/submitUrls" class="submit-form">
+		<form method="POST" action="?/submitUrls" class="submit-form" use:managedForm={{ id: 'submitUrls', label: 'Submit URLs' }}>
 			<textarea
 				name="urlsText"
 				rows="8"
 				placeholder={`https://${projectDomain()}/page-1\nhttps://${projectDomain()}/page-2`}
-				disabled={!canManage()}
+				disabled={!canManage() || isFormBusy('submitUrls')}
 			>{formValue('urlsText')}</textarea>
-			<button type="submit" class="primary" disabled={!canManage()}>Submit URLs</button>
+			<button type="submit" class="primary" disabled={!canManage() || isFormBusy('submitUrls')}>
+				{isFormBusy('submitUrls') ? 'Submitting...' : 'Submit URLs'}
+			</button>
 		</form>
 
 		<dl>
@@ -197,27 +201,37 @@
 	<article class="panel">
 		<h3>Automation schedule</h3>
 		<p class="muted">The selected schedule controls automatic sitemap sync and indexing runs.</p>
-		<form method="POST" action="?/updateSchedule" class="schedule-form">
+		<form method="POST" action="?/updateSchedule" class="schedule-form" use:managedForm={{ id: 'updateSchedule', label: 'Save schedule' }}>
 			<label for="schedule">Schedule</label>
-			<select id="schedule" name="schedule" value={data.project.schedule} disabled={!canManage()}>
+			<select id="schedule" name="schedule" value={data.project.schedule} disabled={!canManage() || isFormBusy('updateSchedule')}>
 				{#each data.scheduleOptions as option}
 					<option value={option}>{scheduleLabel(option)}</option>
 				{/each}
 			</select>
-			<button type="submit" class="primary" disabled={!canManage()}>Save schedule</button>
+			<button type="submit" class="primary" disabled={!canManage() || isFormBusy('updateSchedule')}>
+				{isFormBusy('updateSchedule') ? 'Saving...' : 'Save schedule'}
+			</button>
 		</form>
-		<form method="POST" action="?/runAutomationNow" class="run-now-form">
+		<form
+			method="POST"
+			action="?/runAutomationNow"
+			class="run-now-form"
+			use:managedForm={{
+				id: 'runAutomationNow',
+				label: 'Run automation',
+				confirm: {
+					title: 'Run automation now?',
+					description: 'This will fetch sitemap data and submit selected URLs for this project.',
+					actionLabel: 'Run now'
+				}
+			}}
+		>
 			<button
 				type="submit"
 				class="primary"
-				disabled={!canManage() || data.project.status !== 'active'}
-				onclick={(event) => {
-					if (!confirm('Run automation now for this project?')) {
-						event.preventDefault();
-					}
-				}}
+				disabled={!canManage() || data.project.status !== 'active' || isFormBusy('runAutomationNow')}
 			>
-				Run now
+				{isFormBusy('runAutomationNow') ? 'Running...' : 'Run now'}
 			</button>
 		</form>
 	</article>

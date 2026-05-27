@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
 
 	let { data, children } = $props();
 
@@ -64,8 +65,10 @@
 				<h1>Dashboard</h1>
 			</div>
 			<div class="top-actions">
-				<form method="POST" action="/sign-out">
-					<button class="danger" type="submit">Sign out</button>
+				<form method="POST" action="/sign-out" use:managedForm={{ id: 'signOut', label: 'Sign out' }}>
+					<button class="danger" type="submit" disabled={isFormBusy('signOut')}>
+						{isFormBusy('signOut') ? 'Signing out...' : 'Sign out'}
+					</button>
 				</form>
 			</div>
 		</header>

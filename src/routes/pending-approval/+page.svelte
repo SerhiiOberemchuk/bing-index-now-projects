@@ -1,3 +1,7 @@
+<script lang="ts">
+	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
+</script>
+
 <svelte:head>
 	<title>Pending Approval | IndexNow Control Center</title>
 </svelte:head>
@@ -10,8 +14,10 @@
 
 		<div class="actions">
 			<a href="/sign-in" class="ghost">Back to sign in</a>
-			<form method="POST" action="/sign-out">
-				<button type="submit" class="danger">Sign out</button>
+			<form method="POST" action="/sign-out" use:managedForm={{ id: 'pendingSignOut', label: 'Sign out' }}>
+				<button type="submit" class="danger" disabled={isFormBusy('pendingSignOut')}>
+					{isFormBusy('pendingSignOut') ? 'Signing out...' : 'Sign out'}
+				</button>
 			</form>
 		</div>
 	</section>

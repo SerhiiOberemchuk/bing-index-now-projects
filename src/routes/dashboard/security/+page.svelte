@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
+
 	let { data, form } = $props();
 
 	const formatDateTime = (value: string | Date | null) => {
@@ -7,18 +9,7 @@
 	};
 
 	const isCurrent = (sessionId: string) => data.currentSessionId === sessionId;
-
-	const confirmRevoke = (event: SubmitEvent) => {
-		if (!confirm('Revoke this session?')) {
-			event.preventDefault();
-		}
-	};
-
-	const confirmRevokeOthers = (event: SubmitEvent) => {
-		if (!confirm('Revoke all other sessions?')) {
-			event.preventDefault();
-		}
-	};
+	const revokeId = (token: string) => `revokeSession:${token}`;
 </script>
 
 <section class="head">
@@ -27,8 +18,22 @@
 </section>
 
 <section class="panel">
-	<form method="POST" action="?/revokeOtherSessions" onsubmit={confirmRevokeOthers}>
-		<button type="submit" class="secondary">Logout all other sessions</button>
+	<form
+		method="POST"
+		action="?/revokeOtherSessions"
+		use:managedForm={{
+			id: 'revokeOtherSessions',
+			label: 'Logout other sessions',
+			confirm: {
+				title: 'Logout all other sessions?',
+				description: 'Your current session will stay active.',
+				actionLabel: 'Logout'
+			}
+		}}
+	>
+		<button type="submit" class="secondary" disabled={isFormBusy('revokeOtherSessions')}>
+			{isFormBusy('revokeOtherSessions') ? 'Logging out...' : 'Logout all other sessions'}
+		</button>
 	</form>
 </section>
 
@@ -65,9 +70,23 @@
 							{#if isCurrent(row.id)}
 								<span class="muted">-</span>
 							{:else}
-								<form method="POST" action="?/revokeSession" onsubmit={confirmRevoke}>
+								<form
+									method="POST"
+									action="?/revokeSession"
+									use:managedForm={{
+										id: revokeId(row.token),
+										label: 'Logout session',
+										confirm: {
+											title: 'Logout this session?',
+											description: 'The selected device will need to sign in again.',
+											actionLabel: 'Logout'
+										}
+									}}
+								>
 									<input type="hidden" name="token" value={row.token} />
-									<button type="submit" class="danger">Logout</button>
+									<button type="submit" class="danger" disabled={isFormBusy(revokeId(row.token))}>
+										{isFormBusy(revokeId(row.token)) ? 'Logging out...' : 'Logout'}
+									</button>
 								</form>
 							{/if}
 						</td>

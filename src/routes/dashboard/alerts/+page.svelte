@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
+
 	let { data, form } = $props();
 
 	const formatDateTime = (value: string | Date | null) => {
@@ -11,11 +13,8 @@
 		return value.length > max ? `${value.slice(0, max)}...` : value;
 	};
 
-	const confirmStatusChange = (event: SubmitEvent, status: string) => {
-		if (!confirm(`Set alert status to ${status}?`)) {
-			event.preventDefault();
-		}
-	};
+	const statusActionId = (fingerprint: string, status: string) => `alert:${fingerprint}:${status}`;
+	const statusLabel = (status: string) => (status === 'resolved' ? 'Resolve' : status === 'acknowledged' ? 'Acknowledge' : 'Update');
 </script>
 
 <section class="page-head">
@@ -95,15 +94,19 @@
 						{#if row.projectId}
 							<a href={`/dashboard/projects/${row.projectId}`}>Project</a>
 						{/if}
-						<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'acknowledged')}>
+						<form method="POST" action="?/setStatus" use:managedForm={{ id: statusActionId(row.fingerprint, 'acknowledged'), label: 'Acknowledge alert' }}>
 							<input type="hidden" name="fingerprint" value={row.fingerprint} />
 							<input type="hidden" name="status" value="acknowledged" />
-							<button type="submit">Acknowledge</button>
+							<button type="submit" disabled={isFormBusy(statusActionId(row.fingerprint, 'acknowledged'))}>
+								{isFormBusy(statusActionId(row.fingerprint, 'acknowledged')) ? 'Saving...' : statusLabel('acknowledged')}
+							</button>
 						</form>
-						<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'resolved')}>
+						<form method="POST" action="?/setStatus" use:managedForm={{ id: statusActionId(row.fingerprint, 'resolved'), label: 'Resolve alert' }}>
 							<input type="hidden" name="fingerprint" value={row.fingerprint} />
 							<input type="hidden" name="status" value="resolved" />
-							<button type="submit" class="ok">Resolve</button>
+							<button type="submit" class="ok" disabled={isFormBusy(statusActionId(row.fingerprint, 'resolved'))}>
+								{isFormBusy(statusActionId(row.fingerprint, 'resolved')) ? 'Saving...' : statusLabel('resolved')}
+							</button>
 						</form>
 					</div>
 				</article>
@@ -129,15 +132,19 @@
 					<div class="card-actions">
 						<a href={`/dashboard/projects/${row.projectId}`}>Project</a>
 						<a href="/dashboard/submissions">Submissions</a>
-						<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'acknowledged')}>
+						<form method="POST" action="?/setStatus" use:managedForm={{ id: statusActionId(row.fingerprint, 'acknowledged'), label: 'Acknowledge alert' }}>
 							<input type="hidden" name="fingerprint" value={row.fingerprint} />
 							<input type="hidden" name="status" value="acknowledged" />
-							<button type="submit">Acknowledge</button>
+							<button type="submit" disabled={isFormBusy(statusActionId(row.fingerprint, 'acknowledged'))}>
+								{isFormBusy(statusActionId(row.fingerprint, 'acknowledged')) ? 'Saving...' : statusLabel('acknowledged')}
+							</button>
 						</form>
-						<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'resolved')}>
+						<form method="POST" action="?/setStatus" use:managedForm={{ id: statusActionId(row.fingerprint, 'resolved'), label: 'Resolve alert' }}>
 							<input type="hidden" name="fingerprint" value={row.fingerprint} />
 							<input type="hidden" name="status" value="resolved" />
-							<button type="submit" class="ok">Resolve</button>
+							<button type="submit" class="ok" disabled={isFormBusy(statusActionId(row.fingerprint, 'resolved'))}>
+								{isFormBusy(statusActionId(row.fingerprint, 'resolved')) ? 'Saving...' : statusLabel('resolved')}
+							</button>
 						</form>
 					</div>
 				</article>
@@ -164,15 +171,19 @@
 					<div class="card-actions">
 						<a href={`/dashboard/projects/${row.projectId}/sitemap`}>Sitemap</a>
 						<a href={`/dashboard/projects/${row.projectId}`}>Project</a>
-						<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'acknowledged')}>
+						<form method="POST" action="?/setStatus" use:managedForm={{ id: statusActionId(row.fingerprint, 'acknowledged'), label: 'Acknowledge alert' }}>
 							<input type="hidden" name="fingerprint" value={row.fingerprint} />
 							<input type="hidden" name="status" value="acknowledged" />
-							<button type="submit">Acknowledge</button>
+							<button type="submit" disabled={isFormBusy(statusActionId(row.fingerprint, 'acknowledged'))}>
+								{isFormBusy(statusActionId(row.fingerprint, 'acknowledged')) ? 'Saving...' : statusLabel('acknowledged')}
+							</button>
 						</form>
-						<form method="POST" action="?/setStatus" onsubmit={(event) => confirmStatusChange(event, 'resolved')}>
+						<form method="POST" action="?/setStatus" use:managedForm={{ id: statusActionId(row.fingerprint, 'resolved'), label: 'Resolve alert' }}>
 							<input type="hidden" name="fingerprint" value={row.fingerprint} />
 							<input type="hidden" name="status" value="resolved" />
-							<button type="submit" class="ok">Resolve</button>
+							<button type="submit" class="ok" disabled={isFormBusy(statusActionId(row.fingerprint, 'resolved'))}>
+								{isFormBusy(statusActionId(row.fingerprint, 'resolved')) ? 'Saving...' : statusLabel('resolved')}
+							</button>
 						</form>
 					</div>
 				</article>

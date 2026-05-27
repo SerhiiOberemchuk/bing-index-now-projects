@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
+
 	let { data, form } = $props();
 </script>
 
@@ -18,22 +20,22 @@
 			<p class="notice success">Password was reset successfully. You can sign in now.</p>
 		{/if}
 
-		<form method="POST">
+		<form method="POST" use:managedForm={{ id: 'signIn', label: 'Sign in' }}>
 			<label>
 				Email
-				<input type="email" name="email" value={form?.email ?? ''} autocomplete="email" required />
+				<input type="email" name="email" value={form?.email ?? ''} autocomplete="email" required disabled={isFormBusy('signIn')} />
 			</label>
 
 			<label>
 				Password
-				<input type="password" name="password" autocomplete="current-password" required />
+				<input type="password" name="password" autocomplete="current-password" required disabled={isFormBusy('signIn')} />
 			</label>
 
 			{#if form?.error}
 				<p class="error">{form.error}</p>
 			{/if}
 
-			<button type="submit">Sign in</button>
+			<button type="submit" disabled={isFormBusy('signIn')}>{isFormBusy('signIn') ? 'Signing in...' : 'Sign in'}</button>
 		</form>
 
 		<p class="helper">

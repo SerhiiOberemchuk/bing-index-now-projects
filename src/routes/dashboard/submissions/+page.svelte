@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
+
 	let { data, form } = $props();
 
 	const canManage = () => Boolean(data.canManage);
@@ -28,27 +30,7 @@
 		return value.length > max ? `${value.slice(0, max)}...` : value;
 	};
 
-	const confirmRetry = (event: SubmitEvent) => {
-		if (!canManage()) {
-			event.preventDefault();
-			return;
-		}
-
-		if (!confirm('Retry this failed submission now?')) {
-			event.preventDefault();
-		}
-	};
-
-	const confirmBulkRetry = (event: SubmitEvent) => {
-		if (!canManage()) {
-			event.preventDefault();
-			return;
-		}
-
-		if (!confirm('Retry failed submissions from the selected recent window?')) {
-			event.preventDefault();
-		}
-	};
+	const retryId = (id: string) => `retrySubmission:${id}`;
 </script>
 
 <section class="page-head">
@@ -56,9 +38,24 @@
 		<h2>Submissions</h2>
 		<p>Recent IndexNow requests. Fix failed rows first; expand only when you need the payload.</p>
 	</div>
-	<form method="POST" action="?/retryFailedRecent" onsubmit={confirmBulkRetry} class="retry-all">
-		<input name="limit" type="number" min="1" max="100" value={formValue('limit', '20')} disabled={!canManage()} />
-		<button type="submit" disabled={!canManage() || data.failedInList === 0}>Retry failed</button>
+	<form
+		method="POST"
+		action="?/retryFailedRecent"
+		use:managedForm={{
+			id: 'retryFailedRecent',
+			label: 'Retry failed submissions',
+			confirm: {
+				title: 'Retry failed submissions?',
+				description: 'The latest failed submissions in the selected window will be sent again.',
+				actionLabel: 'Retry'
+			}
+		}}
+		class="retry-all"
+	>
+		<input name="limit" type="number" min="1" max="100" value={formValue('limit', '20')} disabled={!canManage() || isFormBusy('retryFailedRecent')} />
+		<button type="submit" disabled={!canManage() || data.failedInList === 0 || isFormBusy('retryFailedRecent')}>
+			{isFormBusy('retryFailedRecent') ? 'Retrying...' : 'Retry failed'}
+		</button>
 	</form>
 </section>
 
@@ -109,9 +106,23 @@
 					<div class="row-actions">
 						<span class="badge {row.status}">{row.status}</span>
 						{#if row.status === 'failed'}
-							<form method="POST" action="?/retrySubmission" onsubmit={confirmRetry}>
+							<form
+								method="POST"
+								action="?/retrySubmission"
+								use:managedForm={{
+									id: retryId(row.id),
+									label: 'Retry submission',
+									confirm: {
+										title: 'Retry this submission?',
+										description: 'The failed URL payload will be sent to IndexNow again.',
+										actionLabel: 'Retry'
+									}
+								}}
+							>
 								<input type="hidden" name="submissionId" value={row.id} />
-								<button type="submit" class="retry" disabled={!canManage()}>Retry</button>
+								<button type="submit" class="retry" disabled={!canManage() || isFormBusy(retryId(row.id))}>
+									{isFormBusy(retryId(row.id)) ? 'Retrying...' : 'Retry'}
+								</button>
 							</form>
 						{/if}
 						<a href={`/dashboard/projects/${row.projectId}`}>Project</a>

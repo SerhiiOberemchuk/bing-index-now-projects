@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
+
 	let { data, form } = $props();
 	const token = () => (form?.token as string | undefined) ?? data.token;
 </script>
@@ -15,23 +17,25 @@
 		{#if !token()}
 			<p class="error">Reset token is missing. Open the link from your email again.</p>
 		{:else}
-			<form method="POST">
+			<form method="POST" use:managedForm={{ id: 'resetPassword', label: 'Reset password' }}>
 				<input type="hidden" name="token" value={token()} />
 				<label>
 					New password
-					<input type="password" name="password" autocomplete="new-password" required />
+					<input type="password" name="password" autocomplete="new-password" required disabled={isFormBusy('resetPassword')} />
 				</label>
 
 				<label>
 					Confirm password
-					<input type="password" name="confirmPassword" autocomplete="new-password" required />
+					<input type="password" name="confirmPassword" autocomplete="new-password" required disabled={isFormBusy('resetPassword')} />
 				</label>
 
 				{#if form?.error}
 					<p class="error">{form.error}</p>
 				{/if}
 
-				<button type="submit">Reset password</button>
+				<button type="submit" disabled={isFormBusy('resetPassword')}>
+					{isFormBusy('resetPassword') ? 'Resetting...' : 'Reset password'}
+				</button>
 			</form>
 		{/if}
 
