@@ -1,5 +1,6 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
+	import NavigationGuard from '$lib/components/NavigationGuard.svelte';
 	import { Toaster } from 'svelte-sonner';
 
 	let { children } = $props();
@@ -9,6 +10,7 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
+<NavigationGuard />
 {@render children()}
 <Toaster richColors closeButton position="top-right" />
 
