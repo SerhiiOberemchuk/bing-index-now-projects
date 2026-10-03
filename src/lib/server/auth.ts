@@ -1,25 +1,21 @@
-import { env } from '$env/dynamic/private';
+import { BETTER_AUTH_URL, BETTER_AUTH_SECRET } from '$app/env/private';
 import { getRequestEvent } from '$app/server';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
 
-import { getDb } from '$lib/server/db';
-import * as schema from '$lib/server/db/schema';
-import { sendPasswordResetEmail, sendVerificationEmail } from '$lib/server/email/verification';
+import { getDb } from '#lib/server/db/index.js';
+import * as schema from '#lib/server/db/schema.js';
+import { sendPasswordResetEmail, sendVerificationEmail } from '#lib/server/email/verification.js';
 
 export const OWNER_EMAIL = 'serhiioberemchuk@gmail.com';
 
 export const auth = betterAuth({
 	appName: 'IndexNow Control Center',
 	basePath: '/api/auth',
-	baseURL: env.BETTER_AUTH_URL,
-	secret: env.BETTER_AUTH_SECRET,
-	database: drizzleAdapter(getDb(), {
-		provider: 'pg',
-		schema,
-		camelCase: false
-	}),
+	baseURL: BETTER_AUTH_URL,
+	secret: BETTER_AUTH_SECRET,
+	database: drizzleAdapter(getDb(), { provider: 'pg', schema, camelCase: false }),
 	user: {
 		additionalFields: {
 			role: {

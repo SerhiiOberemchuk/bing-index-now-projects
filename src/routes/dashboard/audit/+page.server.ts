@@ -1,9 +1,9 @@
 import { desc } from 'drizzle-orm';
 
 import type { PageServerLoad } from './$types';
-import { getUserRole } from '$lib/server/authz';
-import { getDb } from '$lib/server/db';
-import { auditLog } from '$lib/server/db/schema';
+import { getUserRole } from '#lib/server/authz.js';
+import { getDb } from '#lib/server/db/index.js';
+import { auditLog } from '#lib/server/db/schema.js';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const isOwner = getUserRole(locals.user) === 'owner';

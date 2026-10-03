@@ -1,6 +1,6 @@
 import { toSvelteKitHandler } from 'better-auth/svelte-kit';
 
-import { auth } from '$lib/server/auth';
+import { auth } from '#lib/server/auth.js';
 
 const handler = toSvelteKitHandler(auth);
 

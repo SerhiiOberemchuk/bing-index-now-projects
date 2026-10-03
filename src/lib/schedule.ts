@@ -2,12 +2,18 @@ export const PROJECT_SCHEDULES = ['disabled', 'every_6h', 'daily', 'weekly'] as 
 
 export type ProjectSchedule = (typeof PROJECT_SCHEDULES)[number];
 
+export const DEFAULT_PROJECT_SCHEDULE: ProjectSchedule = 'daily';
+
 export const PROJECT_SCHEDULE_LABEL: Record<ProjectSchedule, string> = {
-	disabled: 'Disabled',
+	disabled: 'Off',
 	every_6h: 'Every 6 hours',
 	daily: 'Daily',
 	weekly: 'Weekly'
 };
+
+export function scheduleLabel(value: string): string {
+	return isProjectSchedule(value) ? PROJECT_SCHEDULE_LABEL[value] : value;
+}
 
 export function isProjectSchedule(value: string): value is ProjectSchedule {
 	return PROJECT_SCHEDULES.includes(value as ProjectSchedule);

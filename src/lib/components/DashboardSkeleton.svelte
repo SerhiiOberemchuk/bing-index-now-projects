@@ -2,25 +2,15 @@
 	let { path = '/dashboard' } = $props<{ path?: string }>();
 
 	const kind = $derived(
-		path.includes('/projects/') && path.includes('/sitemap')
-			? 'sitemap'
-			: path.includes('/projects/')
-				? 'project'
-				: path.startsWith('/dashboard/projects')
-					? 'projects'
-					: path.startsWith('/dashboard/submissions')
-						? 'submissions'
-						: path.startsWith('/dashboard/automation')
-							? 'automation'
-							: path.startsWith('/dashboard/alerts')
-								? 'alerts'
-								: path.startsWith('/dashboard/settings') || path.startsWith('/dashboard/admin')
-									? 'settings'
-									: 'overview'
+		path.startsWith('/dashboard/projects/')
+			? 'project'
+			: path.startsWith('/dashboard/settings') || path.startsWith('/dashboard/admin')
+				? 'settings'
+				: 'projects'
 	);
 
-	const cards = $derived(kind === 'overview' ? 3 : kind === 'settings' ? 1 : 4);
-	const rows = $derived(kind === 'overview' ? 4 : kind === 'project' ? 5 : kind === 'sitemap' ? 8 : 6);
+	const cards = $derived(kind === 'settings' ? 1 : 3);
+	const rows = $derived(kind === 'project' ? 5 : 6);
 </script>
 
 <section class="skeleton-shell" aria-label="Loading page">

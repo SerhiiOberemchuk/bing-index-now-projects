@@ -1,9 +1,8 @@
-import { json } from "@sveltejs/kit";
 import { z } from "zod";
 
-import { getDb } from "$lib/server/db";
-import { submitIndexNowUrls } from "$lib/server/indexnow/submit";
-import { canManageProjects, MANAGE_PERMISSION_ERROR } from "$lib/server/authz";
+import { getDb } from "#lib/server/db/index.js";
+import { submitIndexNowUrls } from "#lib/server/indexnow/submit.js";
+import { canManageProjects, MANAGE_PERMISSION_ERROR } from "#lib/server/authz.js";
 
 const submitSchema = z.object({
   projectId: z.uuid(),
@@ -12,14 +11,14 @@ const submitSchema = z.object({
 
 export async function POST({ request, locals }) {
   if (!canManageProjects(locals.user)) {
-    return json({ error: MANAGE_PERMISSION_ERROR }, { status: 403 });
+    return Response.json({ error: MANAGE_PERMISSION_ERROR }, { status: 403 });
   }
 
   const body = await request.json();
   const parsed = submitSchema.safeParse(body);
 
   if (!parsed.success) {
-    return json(
+    return Response.json(
       {
         error: "Validation failed",
         issues: parsed.error.issues,
@@ -36,7 +35,7 @@ export async function POST({ request, locals }) {
       parsed.data.projectId,
       parsed.data.urls,
     );
-    return json(
+    return Response.json(
       {
         submissionId: result.submissionId,
         bingResponse: {
@@ -48,7 +47,7 @@ export async function POST({ request, locals }) {
       { status: result.ok ? 200 : 502 },
     );
   } catch (error) {
-    return json(
+    return Response.json(
       {
         error: error instanceof Error ? error.message : "Could not submit URLs",
       },

@@ -1,9 +1,9 @@
 import { fail, redirect } from '@sveltejs/kit';
 
 import type { Actions, PageServerLoad } from './$types';
-import { auth } from '$lib/server/auth';
-import { checkThrottle, clearThrottle, createThrottleKey, formatRetryAfter, recordThrottleFailure } from '$lib/server/auth-throttle';
-import { getRequestIp } from '$lib/server/request-ip';
+import { auth } from '#lib/server/auth.js';
+import { checkThrottle, clearThrottle, createThrottleKey, formatRetryAfter, recordThrottleFailure } from '#lib/server/auth-throttle.js';
+import { getRequestIp } from '#lib/server/request-ip.js';
 
 export const load: PageServerLoad = async ({ url }) => ({
 	title: 'Sign in',

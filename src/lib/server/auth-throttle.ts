@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 
-import { getDb } from '$lib/server/db';
-import { authThrottle } from '$lib/server/db/schema';
+import { getDb } from '#lib/server/db/index.js';
+import { authThrottle } from '#lib/server/db/schema.js';
 
 export type AuthThrottleAction = 'sign_in' | 'sign_up' | 'forgot_password';
 

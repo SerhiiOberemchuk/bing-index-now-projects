@@ -1,49 +1,57 @@
 <script lang="ts">
-	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
+	import { isFormBusy, managedForm } from '#lib/client/form-feedback.svelte.js';
+	import { DEFAULT_PROJECT_SCHEDULE, scheduleLabel } from '#lib/schedule.js';
 
 	let { form, data } = $props();
 
 	const formValue = (key: string) =>
 		((form as Record<string, unknown> | undefined)?.values as Record<string, string> | undefined)?.[key] ?? '';
 
-	const scheduleValue = () => formValue('schedule') || 'disabled';
+	const scheduleValue = () => formValue('schedule') || DEFAULT_PROJECT_SCHEDULE;
 
-	const scheduleLabel = (value: string) => {
-		switch (value) {
-			case 'every_6h':
-				return 'Every 6 hours';
-			case 'daily':
-				return 'Daily';
-			case 'weekly':
-				return 'Weekly';
-			default:
-				return 'Disabled';
-		}
-	};
+	let domainInput = $state('');
+	let keyInput = $state('');
+	$effect.pre(() => {
+		domainInput = formValue('domain');
+		keyInput = formValue('indexNowKey');
+	});
+
+	const keyFileUrl = $derived(
+		`https://${domainInput.trim().replace(/^https?:\/\//, '').split('/')[0] || 'your-site.com'}/${keyInput.trim() || '<key>'}.txt`
+	);
 </script>
 
 <section class="box">
-	<h2>Create project</h2>
-	<p>Create a real project record in Neon database.</p>
+	<a href="/dashboard/projects" class="back">← All sites</a>
+	<h2>Add site</h2>
 
-	<form method="POST" use:managedForm={{ id: 'createProject', label: 'Create project' }}>
-		<label for="name">Project name</label>
-		<input id="name" name="name" type="text" placeholder="Acme Europe" value={formValue('name')} disabled={isFormBusy('createProject')} />
+	<ol class="steps">
+		<li>
+			Get an IndexNow key: any 8–128 characters of letters, digits and dashes, or generate one in
+			<a href="https://www.bing.com/indexnow/getstarted" target="_blank" rel="noreferrer">Bing's IndexNow guide</a>.
+		</li>
+		<li>Put a text file on the site at <code>{keyFileUrl}</code> that contains only the key.</li>
+		<li>Fill in the form. The app checks the key file before saving.</li>
+	</ol>
 
-		<label for="domain">Primary domain</label>
-		<input id="domain" name="domain" type="text" placeholder="acme.com" value={formValue('domain')} disabled={isFormBusy('createProject')} />
+	<form method="POST" use:managedForm={{ id: 'createProject', label: 'Add site' }}>
+		<label for="name">Name</label>
+		<input id="name" name="name" type="text" placeholder="My shop" value={formValue('name')} disabled={isFormBusy('createProject')} />
+
+		<label for="domain">Domain, exactly as in the sitemap (with or without www)</label>
+		<input id="domain" name="domain" type="text" placeholder="example.com" bind:value={domainInput} disabled={isFormBusy('createProject')} />
 
 		<label for="indexNowKey">IndexNow key</label>
 		<input
 			id="indexNowKey"
 			name="indexNowKey"
 			type="text"
-			placeholder="your-indexnow-key"
-			value={formValue('indexNowKey')}
+			placeholder="a1b2c3d4e5f6..."
+			bind:value={keyInput}
 			disabled={isFormBusy('createProject')}
 		/>
 
-		<label for="schedule">Automation schedule</label>
+		<label for="schedule">Auto-check the sitemap</label>
 		<select id="schedule" name="schedule" value={scheduleValue()} disabled={isFormBusy('createProject')}>
 			{#each data.scheduleOptions as option}
 				<option value={option}>{scheduleLabel(option)}</option>
@@ -56,7 +64,7 @@
 
 		<div class="actions">
 			<button type="submit" class="primary" disabled={isFormBusy('createProject')}>
-				{isFormBusy('createProject') ? 'Saving...' : 'Save project'}
+				{isFormBusy('createProject') ? 'Checking key file…' : 'Add site'}
 			</button>
 			<a href="/dashboard/projects">Cancel</a>
 		</div>
@@ -73,7 +81,23 @@
 	}
 
 	h2 {
-		margin: 0;
+		margin: 0.35rem 0 0;
+	}
+
+	.back {
+		color: var(--text-soft);
+		text-decoration: none;
+		font-size: 0.9rem;
+	}
+
+	.steps {
+		margin: 0.8rem 0 1rem;
+		padding-left: 1.2rem;
+		display: grid;
+		gap: 0.35rem;
+		color: var(--text-soft);
+		font-size: 0.92rem;
+		overflow-wrap: anywhere;
 	}
 
 	p {

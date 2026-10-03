@@ -1,134 +1,96 @@
 <script lang="ts">
+	import { formatDateTime } from '#lib/format.js';
+	import { describeBingResponse } from '#lib/indexnow-response.js';
+	import { projectStatus } from '#lib/project-status.js';
+	import { scheduleLabel } from '#lib/schedule.js';
+
 	let { data } = $props();
 
-	const activeCount = $derived(data.projects.filter((row) => row.status === 'active').length);
-	const attentionCount = $derived(
-		data.projects.filter((row) => row.healthStatus === 'warning' || row.healthStatus === 'setup_required').length
-	);
-	const pendingCount = $derived(data.projects.reduce((total, row) => total + row.pendingIndexing, 0));
-
-	const formatDateTime = (value: string | Date | null, fallback = 'No submissions yet') => {
-		if (!value) return fallback;
-		return new Date(value).toLocaleString();
-	};
-
-	const scheduleLabel = (value: string) => {
-		switch (value) {
-			case 'every_6h':
-				return 'Every 6 hours';
-			case 'daily':
-				return 'Daily';
-			case 'weekly':
-				return 'Weekly';
-			default:
-				return 'Disabled';
-		}
-	};
-
-	const healthLabel = (value: string) => {
-		switch (value) {
-			case 'healthy':
-				return 'Healthy';
-			case 'warning':
-				return 'Needs attention';
-			case 'paused':
-				return 'Paused';
-			case 'setup_required':
-				return 'Setup required';
-			default:
-				return 'Active';
-		}
-	};
+	const autoCheckLabel = (row: { schedule: string; status: string; nextRunAt: Date | null }) =>
+		row.schedule === 'disabled' || row.status !== 'active'
+			? scheduleLabel(row.schedule)
+			: `${scheduleLabel(row.schedule)}, next ${formatDateTime(row.nextRunAt, 'on the next run')}`;
 </script>
 
 <section class="page-head">
 	<div>
-		<h2>Projects</h2>
-		<p>One card per domain. Open a project to submit URLs, fetch sitemap data or change automation.</p>
+		<h2>Sites</h2>
+		<p>Every site's sitemap is checked automatically. New and changed pages are sent to Bing through IndexNow.</p>
 	</div>
 	{#if data.canManage}
-		<a href="/dashboard/projects/new" class="primary">New project</a>
-	{:else}
-		<span class="primary disabled">New project</span>
+		<a href="/dashboard/projects/new" class="primary">Add site</a>
 	{/if}
 </section>
 
-{#if !data.canManage}
-	<p class="note warn">Read-only access. Project changes are disabled for your role.</p>
-{/if}
-
-<section class="summary" aria-label="Project summary">
-	<article>
-		<p>Total</p>
-		<strong>{data.projects.length}</strong>
-	</article>
-	<article>
-		<p>Active</p>
-		<strong>{activeCount}</strong>
-	</article>
-	<article class:attention={attentionCount > 0}>
-		<p>Needs attention</p>
-		<strong>{attentionCount}</strong>
-	</article>
-	<article>
-		<p>Pending URLs</p>
-		<strong>{pendingCount}</strong>
-	</article>
-</section>
+<details class="how">
+	<summary>How it works and what the numbers mean</summary>
+	<ol>
+		<li><strong>Check</strong>: the app reads the site's sitemap (from robots.txt, or /sitemap.xml).</li>
+		<li>
+			<strong>Send</strong>: pages that are new, or whose <code>&lt;lastmod&gt;</code> changed since the last send, go to
+			Bing in one IndexNow request.
+		</li>
+		<li>
+			<strong>Bing's answer</strong>: HTTP 200 or 202 means Bing <em>received</em> the list. It does not mean the pages
+			are indexed: Bing decides when to crawl them. Check real indexing in Bing Webmaster Tools.
+		</li>
+	</ol>
+	<p>
+		IndexNow is shared with Yandex, Seznam, Naver and Yep. Google does not support it, so use Google Search Console for
+		Google.
+	</p>
+</details>
 
 {#if data.projects.length === 0}
 	<section class="empty-state">
-		<h3>No projects yet</h3>
-		<p>Create a project, verify the IndexNow key, then submit URLs from the project screen.</p>
+		<h3>No sites yet</h3>
+		<p>Add a site, put the IndexNow key file on it, and the app will send its pages to Bing.</p>
 		{#if data.canManage}
-			<a href="/dashboard/projects/new" class="primary">Create first project</a>
+			<a href="/dashboard/projects/new" class="primary">Add first site</a>
 		{/if}
 	</section>
 {:else}
 	<section class="project-list">
-		{#each data.projects as row}
-			<article class="project-card" class:attention={row.healthStatus === 'warning' || row.healthStatus === 'setup_required'}>
+		{#each data.projects as row (row.id)}
+			{@const status = projectStatus(row, row.stats)}
+			{@const last = row.stats.lastSubmission}
+			<a class="project-card {status.tone}" href={`/dashboard/projects/${row.id}`}>
 				<div class="card-main">
 					<div>
 						<h3>{row.name}</h3>
 						<p>{row.domain}</p>
 					</div>
-					<div class="badges">
-						<span class="badge {row.healthStatus}">{healthLabel(row.healthStatus)}</span>
-						<span class:paused={row.status === 'paused'} class="badge status">{row.status}</span>
-					</div>
+					<span class="status {status.tone}">{status.text}</span>
 				</div>
 
 				<div class="signals">
 					<div>
-						<span>Pending</span>
-						<strong>{row.pendingIndexing}</strong>
+						<span>Pages in sitemap</span>
+						<strong>{row.stats.inSitemap}</strong>
 					</div>
 					<div>
-						<span>Success</span>
-						<strong>{row.successRate === null ? 'N/A' : `${row.successRate}%`}</strong>
+						<span>Sent to Bing</span>
+						<strong>{row.stats.sent}</strong>
 					</div>
-					<div>
-						<span>Schedule</span>
-						<strong>{scheduleLabel(row.schedule)}</strong>
+					<div class:waiting={row.stats.waiting > 0}>
+						<span>Waiting to send</span>
+						<strong>{row.stats.waiting}</strong>
 					</div>
 				</div>
 
 				<div class="meta">
-					<p>Last submission: {formatDateTime(row.lastSubmissionAt)}</p>
-					{#if row.lastFailureCode}
-						<p class="error">Last error: HTTP {row.lastFailureCode} at {formatDateTime(row.lastFailureAt, 'N/A')}</p>
-					{:else}
-						<p>No recent error recorded.</p>
-					{/if}
+					<p>
+						Last send:
+						{#if last}
+							{formatDateTime(last.createdAt)}, {last.urlCount} pages,
+							<span class:error={!last.ok}>{describeBingResponse(last.statusCode).text} (HTTP {last.statusCode ?? 'n/a'})</span>
+						{:else}
+							never
+						{/if}
+					</p>
+					<p>Auto-check: {autoCheckLabel(row)}</p>
 				</div>
-
-				<div class="actions">
-					<a class="primary small" href={`/dashboard/projects/${row.id}`}>Open</a>
-					<a class="secondary small" href={`/dashboard/projects/${row.id}/sitemap`}>Sitemap</a>
-					<a class="secondary small" href={`/dashboard/projects/${row.id}/history`}>History</a>
-				</div>
-			</article>
+			</a>
 		{/each}
 	</section>
 {/if}
@@ -150,7 +112,8 @@
 	.page-head p,
 	.meta,
 	.signals span,
-	.empty-state p {
+	.empty-state p,
+	.how {
 		color: var(--text-soft);
 	}
 
@@ -158,77 +121,48 @@
 		margin-top: 0.35rem;
 	}
 
-	.primary,
-	.secondary {
+	.primary {
 		text-decoration: none;
 		border-radius: 8px;
-		border: 1px solid var(--border);
 		font-weight: 700;
 		white-space: nowrap;
-	}
-
-	.primary {
 		padding: 0.58rem 0.85rem;
 		background: var(--brand);
-		border-color: var(--brand);
+		border: 1px solid var(--brand);
 		color: #fff;
 	}
 
-	.secondary {
-		padding: 0.5rem 0.72rem;
-		background: var(--surface-soft);
-	}
-
-	.primary.disabled {
-		opacity: 0.55;
-		cursor: not-allowed;
-	}
-
-	.note {
-		margin-top: 0.75rem;
-		padding: 0.55rem 0.7rem;
-		border-radius: 8px;
-	}
-
-	.note.warn {
-		background: #fff4e8;
-		border: 1px solid #ffd7b5;
-		color: #c65f00;
-	}
-
-	.summary {
-		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		gap: 0.75rem;
+	.how {
 		margin-top: 0.8rem;
-	}
-
-	.summary article,
-	.project-card,
-	.empty-state {
+		padding: 0.7rem 0.85rem;
 		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: 8px;
+		font-size: 0.9rem;
 	}
 
-	.summary article {
-		padding: 0.8rem;
+	.how summary {
+		cursor: pointer;
+		color: var(--brand);
+		font-weight: 600;
 	}
 
-	.summary article.attention,
-	.project-card.attention {
-		border-color: #ffd0d0;
+	.how ol {
+		margin: 0.6rem 0 0.4rem;
+		padding-left: 1.2rem;
+		display: grid;
+		gap: 0.35rem;
 	}
 
-	.summary p {
-		color: var(--text-soft);
-		font-size: 0.82rem;
+	.how strong {
+		color: var(--text);
 	}
 
-	.summary strong {
-		display: block;
-		margin-top: 0.25rem;
-		font-size: 1.35rem;
+	.empty-state,
+	.project-card {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 8px;
 	}
 
 	.empty-state {
@@ -249,6 +183,24 @@
 		padding: 0.9rem;
 		display: grid;
 		gap: 0.75rem;
+		text-decoration: none;
+		border-left-width: 4px;
+	}
+
+	.project-card:hover {
+		border-color: var(--brand);
+	}
+
+	.project-card.ok {
+		border-left-color: var(--ok);
+	}
+
+	.project-card.warn {
+		border-left-color: var(--warn);
+	}
+
+	.project-card.error {
+		border-left-color: var(--danger);
 	}
 
 	.card-main {
@@ -267,43 +219,32 @@
 		color: var(--text-soft);
 	}
 
-	.badges,
-	.actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.45rem;
-		justify-content: flex-end;
-	}
-
-	.badge {
+	.status {
 		display: inline-block;
-		padding: 0.2rem 0.48rem;
+		padding: 0.25rem 0.55rem;
 		border-radius: 999px;
-		font-size: 0.78rem;
-		text-transform: capitalize;
+		font-size: 0.8rem;
+		text-align: right;
 	}
 
-	.badge.healthy,
-	.badge.status {
+	.status.ok {
 		background: #e8f8ef;
 		color: var(--ok);
 	}
 
-	.badge.warning,
-	.badge.status.paused {
+	.status.warn {
 		background: #fff4e8;
 		color: var(--warn);
 	}
 
-	.badge.setup_required,
-	.badge.paused {
+	.status.error {
 		background: #ffe8e8;
 		color: var(--danger);
 	}
 
-	.badge.active {
-		background: #eef3ff;
-		color: #35558c;
+	.status.muted {
+		background: var(--surface-soft);
+		color: var(--text-soft);
 	}
 
 	.signals {
@@ -318,6 +259,10 @@
 		background: var(--surface-soft);
 	}
 
+	.signals div.waiting strong {
+		color: var(--warn);
+	}
+
 	.signals span,
 	.signals strong {
 		display: block;
@@ -325,7 +270,7 @@
 
 	.signals strong {
 		margin-top: 0.22rem;
-		font-size: 0.96rem;
+		font-size: 1.1rem;
 	}
 
 	.meta {
@@ -338,14 +283,6 @@
 		color: var(--danger);
 	}
 
-	.actions {
-		justify-content: flex-start;
-	}
-
-	.small {
-		padding: 0.45rem 0.65rem;
-	}
-
 	@media (max-width: 760px) {
 		.page-head,
 		.card-main {
@@ -353,13 +290,12 @@
 			flex-direction: column;
 		}
 
-		.summary,
 		.signals {
 			grid-template-columns: 1fr;
 		}
 
-		.badges {
-			justify-content: flex-start;
+		.status {
+			text-align: left;
 		}
 	}
 </style>

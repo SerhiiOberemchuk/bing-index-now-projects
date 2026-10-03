@@ -1,8 +1,9 @@
-import { building } from '$app/environment';
-import { redirect, type Handle } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
+import type { Handle } from '@sveltejs/kit/hooks';
+import { building } from '$app/env';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 
-import { auth } from '$lib/server/auth';
+import { auth } from '#lib/server/auth.js';
 
 const PUBLIC_ROUTES = ['/sign-in', '/sign-up'];
 const PENDING_APPROVAL_ROUTE = '/pending-approval';
