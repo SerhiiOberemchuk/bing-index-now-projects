@@ -1,45 +1,29 @@
-import { desc } from 'drizzle-orm';
+import { asc } from 'drizzle-orm';
 
 import type { PageServerLoad } from './$types';
 import { getDb } from '$lib/server/db';
+import { normalizeDomain } from '$lib/server/domain';
 import { projects } from '$lib/server/db/schema';
-import { getProjectHealthSnapshot } from '$lib/server/monitoring/project-health';
+import { getProjectStats } from '$lib/server/indexnow/stats';
 
 export const load: PageServerLoad = async () => {
 	const db = getDb();
-	const projectRows = await db.select().from(projects).orderBy(desc(projects.createdAt));
-
-	if (projectRows.length === 0) {
-		return { projects: [] };
-	}
-
-	const normalized = await Promise.all(
-		projectRows.map(async (project) => {
-			const health = await getProjectHealthSnapshot(db, {
-				id: project.id,
-				status: project.status
-			});
-
-			const successRate =
-				health.totalSubmissions > 0
-					? Math.round(((health.totalSubmissions - health.failedSubmissions) / health.totalSubmissions) * 1000) /
-						10
-					: null;
-
-			return {
-				...project,
-				lastSubmissionAt: health.latestSuccessAt ?? health.latestFailureAt,
-				successRate,
-				healthStatus: health.status,
-				pendingIndexing: health.pendingIndexing,
-				lastFailureCode: health.latestFailureCode,
-				lastFailureAt: health.latestFailureAt,
-				nextRunAt: project.nextRunAt
-			};
-		})
+	const rows = await db.select().from(projects).orderBy(asc(projects.name));
+	const stats = await getProjectStats(
+		db,
+		rows.map((row) => row.id)
 	);
 
 	return {
-		projects: normalized
+		projects: rows.map((row) => ({
+			id: row.id,
+			name: row.name,
+			domain: normalizeDomain(row.domain),
+			status: row.status,
+			schedule: row.schedule,
+			lastAutomationRunAt: row.lastAutomationRunAt,
+			nextRunAt: row.nextRunAt,
+			stats: stats.get(row.id)!
+		}))
 	};
 };

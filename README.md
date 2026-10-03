@@ -51,14 +51,28 @@ npm run dev
 2. Register owner account
 3. Sign in and continue in `/dashboard`
 
-## Dashboard flow (end-to-end)
+## How it works
 
-1. Open `/dashboard/projects/new` and create a project (name, domain, IndexNow key).
-2. Open `/dashboard/projects` and click `Open` on your project.
-3. On project details page, paste URLs and click `Submit URLs`.
-4. Review the latest records on:
-   - `/dashboard/projects/[projectId]` (project timeline)
-   - `/dashboard/submissions` (global log)
+1. **Add site** (`/dashboard/projects/new`): name, domain and IndexNow key. The key file
+   `https://<domain>/<key>.txt` must exist and contain only the key; it is checked before saving.
+   The domain must match the URLs in the sitemap exactly (with or without `www`).
+2. **Check**: the app reads the sitemaps listed in `robots.txt` (or `/sitemap.xml` if none are listed),
+   including sitemap indexes and `.xml.gz` files, and stores the page list.
+3. **Send**: pages that are new, or whose `<lastmod>` is newer than their last successful send, go to
+   `https://www.bing.com/indexnow` in one request (max 10,000 URLs). A `<lastmod>` equal to the fetch
+   time is ignored, because it means the sitemap generates it on every request rather than on real edits.
+4. **Bing's answer**: `200`/`202` means Bing *received* the URLs, not that they are indexed. Pages Bing
+   rejects stay "waiting" and are retried on the next check. Check real indexing in Bing Webmaster Tools.
+
+All of this lives in one function, `syncProject` in `src/lib/server/indexnow/sync.ts`, used by both the
+"Check sitemap and send new pages" button and the cron job.
+
+## Pages
+
+- `/dashboard/projects`: all sites with pages in sitemap / sent / waiting, last Bing answer and status.
+- `/dashboard/projects/[projectId]`: one site: check button, last check result, auto-check schedule,
+  key file and sitemaps, send history (with the URLs in each request), page list, manual send.
+- `/dashboard/admin` (owner only): users, invites, audit log.
 
 ## API
 
@@ -66,29 +80,14 @@ npm run dev
 - `GET /api/projects` - get projects list
 - `POST /api/projects` - create project
 - `POST /api/indexnow/submit` - submit URLs to Bing IndexNow
-- `GET /api/cron/indexnow` - protected automation endpoint (sitemap sync + IndexNow for selected URLs)
+- `GET /api/cron/indexnow` - protected cron endpoint, runs `syncProject` for every due site
 
 ## Vercel Cron automation
 
-- `vercel.json` includes a cron job that calls `/api/cron/indexnow` every 6 hours.
-- Set `CRON_SECRET` in Vercel project env variables.
-- Vercel sends this token as `Authorization: Bearer <CRON_SECRET>`.
-- The cron run (for projects with schedule enabled and due):
-1. Discovers sitemap candidates per active project.
-2. Parses sitemap files and upserts discovered URLs.
-3. Submits selected URLs that were never submitted or changed after last submission.
-4. Stores full Bing response in `index_now_submissions` and logs run details to `audit_log`.
-5. Updates `nextRunAt` based on project schedule.
+- `vercel.json` calls `/api/cron/indexnow` every 6 hours with `Authorization: Bearer <CRON_SECRET>`.
+- Each run checks the active sites whose auto-check (every 6 hours / daily / weekly) is due.
+- Every check writes an `indexnow.sync` row to `audit_log`; the site page shows the latest one as "Last check".
 
-
-## Operational pages
-
-- `/dashboard/projects` - project inventory with health, pending URLs, last error, schedule
-- `/dashboard/projects/[projectId]` - project operations and health
-- `/dashboard/projects/[projectId]/history` - unified timeline (submissions + automation + sitemap failures)
-- `/dashboard/automation` - automation runs log
-- `/dashboard/alerts` - active/ack/resolved incidents with quick actions
-- `/dashboard/submissions` - full IndexNow response log and retry actions
 ## Useful scripts
 
 ```bash

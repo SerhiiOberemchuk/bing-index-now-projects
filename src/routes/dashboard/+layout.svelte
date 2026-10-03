@@ -8,17 +8,8 @@
 	const isNavigating = $derived(Boolean(navigating.to));
 	const pendingPath = $derived(navigating.to?.url.pathname ?? null);
 
-	const nav = () => [
-		{ href: '/dashboard', label: 'Overview' },
-		{ href: '/dashboard/projects', label: 'Projects' },
-		{ href: '/dashboard/submissions', label: 'Submissions' },
-		{ href: '/dashboard/automation', label: 'Automation' },
-		{
-			href: '/dashboard/alerts',
-			label: 'Alerts',
-			badge: data.canManage && data.alertsCount > 0 ? String(data.alertsCount) : null
-		},
-		{ href: '/dashboard/settings', label: 'Settings' },
+	const nav = (): Array<{ href: string; label: string; badge?: string | null }> => [
+		{ href: '/dashboard/projects', label: 'Sites' },
 		...(data.user?.role === 'owner'
 			? [
 				{

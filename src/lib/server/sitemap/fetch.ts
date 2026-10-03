@@ -1,37 +1,45 @@
 import { normalizeDomain } from '$lib/server/domain';
 
-type ParsedUrl = {
+const USER_AGENT = 'IndexNow-Control-Center/1.0';
+const FETCH_TIMEOUT_MS = 15_000;
+
+export type ParsedUrl = {
 	url: string;
 	lastMod: Date | null;
 	sourceSitemap: string;
 };
 
-export type SitemapFetchResult = {
-	rootSitemap: string;
-	visitedSitemaps: string[];
-	urls: ParsedUrl[];
+export type CrawledSitemap = {
+	url: string;
+	ok: boolean;
+	error: string | null;
 };
 
-const XML_TAG_RE = (tag: string) => new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'gi');
+export type SitemapCrawlResult = {
+	sitemaps: CrawledSitemap[];
+	urls: ParsedUrl[];
+	/** URLs dropped because their host differs from the project domain (e.g. www vs non-www). */
+	skippedHosts: Record<string, number>;
+	/** True when maxSitemaps/maxUrls was reached, so the URL list is incomplete. */
+	truncated: boolean;
+};
+
+// Matches <tag ...>...</tag> but not longer names sharing the prefix (<url> but not <urlset>).
+const tagRegex = (tag: string) => new RegExp(`<${tag}(?![\\w:-])[^>]*>([\\s\\S]*?)</${tag}>`, 'gi');
 
 function decodeXml(text: string): string {
 	return text
-		.replace(/&amp;/g, '&')
+		.replace(/^\s*<!\[CDATA\[([\s\S]*?)\]\]>\s*$/, '$1')
 		.replace(/&lt;/g, '<')
 		.replace(/&gt;/g, '>')
 		.replace(/&quot;/g, '"')
-		.replace(/&#39;/g, "'")
+		.replace(/&apos;|&#39;/g, "'")
+		.replace(/&amp;/g, '&')
 		.trim();
 }
 
 function getTagValues(xml: string, tag: string): string[] {
-	const regex = XML_TAG_RE(tag);
-	const result: string[] = [];
-	let match: RegExpExecArray | null = null;
-	while ((match = regex.exec(xml)) !== null) {
-		result.push(decodeXml(match[1]));
-	}
-	return result;
+	return Array.from(xml.matchAll(tagRegex(tag)), (match) => decodeXml(match[1]));
 }
 
 function parseDateOrNull(value: string | undefined): Date | null {
@@ -40,105 +48,135 @@ function parseDateOrNull(value: string | undefined): Date | null {
 	return Number.isNaN(date.getTime()) ? null : date;
 }
 
-function toAbsoluteUrl(value: string, base: string): string {
-	return new URL(value, base).toString();
+async function fetchText(url: string): Promise<{ ok: boolean; status: number; bodyText: string }> {
+	const response = await fetch(url, {
+		headers: { 'User-Agent': USER_AGENT },
+		signal: AbortSignal.timeout(FETCH_TIMEOUT_MS)
+	});
+	const buffer = await response.arrayBuffer();
+	const head = new Uint8Array(buffer, 0, Math.min(2, buffer.byteLength));
+	// Some sites serve .xml.gz without Content-Encoding, so fetch does not unpack it.
+	const isGzip = head[0] === 0x1f && head[1] === 0x8b;
+	const bodyText = isGzip
+		? await new Response(new Blob([buffer]).stream().pipeThrough(new DecompressionStream('gzip'))).text()
+		: new TextDecoder().decode(buffer);
+	return { ok: response.ok, status: response.status, bodyText };
 }
 
-export async function discoverSitemapCandidates(projectDomain: string): Promise<string[]> {
-	const host = normalizeDomain(projectDomain);
-	const base = `https://${host}`;
-	const defaultSitemap = `${base}/sitemap.xml`;
-	const candidates = new Set<string>([defaultSitemap]);
+/** Sitemaps listed in robots.txt, or /sitemap.xml when robots.txt lists none. */
+export async function discoverSitemapRoots(projectDomain: string): Promise<string[]> {
+	const base = `https://${normalizeDomain(projectDomain)}`;
+	const roots = new Set<string>();
 
 	try {
-		const robotsResponse = await fetch(`${base}/robots.txt`, {
-			headers: { 'User-Agent': 'IndexNow-Control-Center/1.0' }
-		});
-		if (robotsResponse.ok) {
-			const robotsText = await robotsResponse.text();
-			for (const line of robotsText.split(/\r?\n/)) {
-				const trimmed = line.trim();
-				if (!trimmed.toLowerCase().startsWith('sitemap:')) continue;
-				const raw = trimmed.slice(8).trim();
-				if (!raw) continue;
+		const robots = await fetchText(`${base}/robots.txt`);
+		if (robots.ok) {
+			for (const line of robots.bodyText.split(/\r?\n/)) {
+				const match = line.trim().match(/^sitemap:\s*(\S+)/i);
+				if (!match) continue;
 				try {
-					candidates.add(toAbsoluteUrl(raw, base));
+					roots.add(new URL(match[1], base).toString());
 				} catch {
 					// Ignore malformed sitemap lines in robots.txt
 				}
 			}
 		}
 	} catch {
-		// Fallback to default sitemap only
+		// robots.txt is optional
 	}
 
-	return Array.from(candidates);
+	if (roots.size === 0) roots.add(`${base}/sitemap.xml`);
+	return Array.from(roots);
 }
 
-export async function fetchSitemapUrls(options: {
+export async function crawlSitemaps(options: {
 	projectDomain: string;
-	sitemapUrl: string;
 	maxSitemaps?: number;
 	maxUrls?: number;
-}): Promise<SitemapFetchResult> {
-	const maxSitemaps = options.maxSitemaps ?? 25;
-	const maxUrls = options.maxUrls ?? 20000;
+}): Promise<SitemapCrawlResult> {
+	const maxSitemaps = options.maxSitemaps ?? 30;
+	const maxUrls = options.maxUrls ?? 20_000;
 	const expectedHost = normalizeDomain(options.projectDomain);
-	const rootSitemap = toAbsoluteUrl(options.sitemapUrl, `https://${expectedHost}/`);
 
-	const queue = [rootSitemap];
+	const queue = await discoverSitemapRoots(options.projectDomain);
 	const visited = new Set<string>();
+	const sitemaps: CrawledSitemap[] = [];
 	const urls = new Map<string, ParsedUrl>();
+	const skippedHosts: Record<string, number> = {};
+	let truncated = false;
 
-	while (queue.length > 0 && visited.size < maxSitemaps && urls.size < maxUrls) {
-		const current = queue.shift();
-		if (!current || visited.has(current)) continue;
+	while (queue.length > 0) {
+		const current = queue.shift()!;
+		if (visited.has(current)) continue;
+		if (visited.size >= maxSitemaps || urls.size >= maxUrls) {
+			truncated = true;
+			break;
+		}
 		visited.add(current);
 
-		const response = await fetch(current, {
-			headers: {
-				'User-Agent': 'IndexNow-Control-Center/1.0'
-			}
-		});
-
-		if (!response.ok) {
-			throw new Error(`Failed to fetch sitemap ${current}. HTTP ${response.status}`);
-		}
-
-		const xml = await response.text();
-		const sitemapLocs = getTagValues(xml, 'sitemap').flatMap((node) => getTagValues(node, 'loc'));
-
-		if (sitemapLocs.length > 0) {
-			for (const loc of sitemapLocs) {
-				if (queue.length + visited.size >= maxSitemaps) break;
-				const next = toAbsoluteUrl(loc, current);
-				if (!visited.has(next)) queue.push(next);
-			}
+		let xml: string;
+		try {
+			const response = await fetchText(current);
+			if (!response.ok) throw new Error(`HTTP ${response.status}`);
+			xml = response.bodyText;
+		} catch (error) {
+			const message = error instanceof Error ? error.message : 'Fetch failed';
+			sitemaps.push({ url: current, ok: false, error: message });
 			continue;
 		}
 
+		const childSitemaps = getTagValues(xml, 'sitemap').flatMap((node) => getTagValues(node, 'loc'));
 		const urlNodes = getTagValues(xml, 'url');
+
+		if (childSitemaps.length === 0 && urlNodes.length === 0) {
+			sitemaps.push({ url: current, ok: false, error: 'Not a sitemap: no <url> or <sitemap> entries found' });
+			continue;
+		}
+		sitemaps.push({ url: current, ok: true, error: null });
+
+		for (const loc of childSitemaps) {
+			try {
+				queue.push(new URL(loc, current).toString());
+			} catch {
+				// Ignore malformed child sitemap URL
+			}
+		}
+
 		for (const node of urlNodes) {
-			if (urls.size >= maxUrls) break;
+			if (urls.size >= maxUrls) {
+				truncated = true;
+				break;
+			}
 
 			const loc = getTagValues(node, 'loc')[0];
 			if (!loc) continue;
-			const absolute = toAbsoluteUrl(loc, current);
-			const parsed = new URL(absolute);
-			if (normalizeDomain(parsed.host) !== expectedHost) continue;
 
-			const lastMod = parseDateOrNull(getTagValues(node, 'lastmod')[0]);
-			urls.set(absolute, {
-				url: absolute,
-				lastMod,
+			let absolute: URL;
+			try {
+				absolute = new URL(loc, current);
+			} catch {
+				continue;
+			}
+
+			const host = normalizeDomain(absolute.host);
+			if (host !== expectedHost) {
+				skippedHosts[host] = (skippedHosts[host] ?? 0) + 1;
+				continue;
+			}
+
+			const url = absolute.toString();
+			urls.set(url, {
+				url,
+				lastMod: parseDateOrNull(getTagValues(node, 'lastmod')[0]),
 				sourceSitemap: current
 			});
 		}
 	}
 
 	return {
-		rootSitemap,
-		visitedSitemaps: Array.from(visited),
-		urls: Array.from(urls.values())
+		sitemaps,
+		urls: Array.from(urls.values()),
+		skippedHosts,
+		truncated
 	};
 }

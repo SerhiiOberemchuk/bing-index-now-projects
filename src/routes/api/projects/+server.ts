@@ -7,6 +7,7 @@ import { normalizeDomain } from '$lib/server/domain';
 import { verifyIndexNowKey } from '$lib/server/indexnow/verify-key';
 import { projects } from '$lib/server/db/schema';
 import { canManageProjects, MANAGE_PERMISSION_ERROR } from '$lib/server/authz';
+import { DEFAULT_PROJECT_SCHEDULE } from '$lib/schedule';
 
 const createProjectSchema = z.object({
 	name: z.string().trim().min(2).max(120),
@@ -55,7 +56,8 @@ export async function POST({ request, locals }) {
 		.values({
 			name: parsed.data.name,
 			domain: normalizedDomain,
-			indexNowKey: parsed.data.indexNowKey.trim()
+			indexNowKey: parsed.data.indexNowKey.trim(),
+			schedule: DEFAULT_PROJECT_SCHEDULE
 		})
 		.returning();
 
