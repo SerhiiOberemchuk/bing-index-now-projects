@@ -5,11 +5,11 @@ import { fail } from '@sveltejs/kit';
 import { z } from 'zod';
 
 import type { Actions, PageServerLoad } from './$types';
-import { getUserRole } from '$lib/server/authz';
-import { writeAuditLog } from '$lib/server/audit';
-import { getDb } from '$lib/server/db';
-import { authInvites } from '$lib/server/db/schema';
-import { getRequestIp } from '$lib/server/request-ip';
+import { getUserRole } from '#lib/server/authz.js';
+import { writeAuditLog } from '#lib/server/audit.js';
+import { getDb } from '#lib/server/db/index.js';
+import { authInvites } from '#lib/server/db/schema.js';
+import { getRequestIp } from '#lib/server/request-ip.js';
 
 const createInviteSchema = z.object({
 	email: z.email(),

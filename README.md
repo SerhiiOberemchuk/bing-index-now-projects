@@ -10,6 +10,11 @@ SaaS platform for managing client projects and submitting URLs to Bing IndexNow.
 - Drizzle ORM + Drizzle Kit
 - Vercel adapter
 
+## Requirements
+
+- Node.js 22.17 or newer (SvelteKit 3; `.npmrc` has `engine-strict=true`, so older Node fails at install).
+  On Vercel: Project Settings → Build and Deployment → Node.js Version must be 22.x or 24.x.
+
 ## 1) Install
 
 ```bash

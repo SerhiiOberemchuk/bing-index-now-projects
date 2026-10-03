@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { formatDateTime } from '$lib/format';
-	import { describeBingResponse } from '$lib/indexnow-response';
-	import { projectStatus } from '$lib/project-status';
-	import { scheduleLabel } from '$lib/schedule';
+	import { formatDateTime } from '#lib/format.js';
+	import { describeBingResponse } from '#lib/indexnow-response.js';
+	import { projectStatus } from '#lib/project-status.js';
+	import { scheduleLabel } from '#lib/schedule.js';
 
 	let { data } = $props();
 

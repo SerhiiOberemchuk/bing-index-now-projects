@@ -1,11 +1,11 @@
 import { and, asc, eq, gt, isNotNull, isNull, lt, notInArray, or, sql } from 'drizzle-orm';
 
-import type { DbClient } from '$lib/server/db';
-import { auditLog, discoveredUrls, projects, sitemaps, type Project } from '$lib/server/db/schema';
-import { INDEXNOW_MAX_URLS, submitIndexNowUrls } from '$lib/server/indexnow/submit';
-import { crawlSitemaps } from '$lib/server/sitemap/fetch';
-import { computeNextRunAt } from '$lib/schedule';
-import type { SyncResult } from '$lib/sync-summary';
+import type { DbClient } from '#lib/server/db/index.js';
+import { auditLog, discoveredUrls, projects, sitemaps, type Project } from '#lib/server/db/schema.js';
+import { INDEXNOW_MAX_URLS, submitIndexNowUrls } from '#lib/server/indexnow/submit.js';
+import { crawlSitemaps } from '#lib/server/sitemap/fetch.js';
+import { computeNextRunAt } from '#lib/schedule.js';
+import type { SyncResult } from '#lib/sync-summary.js';
 
 const MAX_SITEMAPS = 30;
 const MAX_SITEMAP_URLS = 20_000;

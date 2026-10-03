@@ -1,14 +1,13 @@
 import { sql } from 'drizzle-orm';
-import { json } from '@sveltejs/kit';
 
-import { getDb } from '$lib/server/db';
+import { getDb } from '#lib/server/db/index.js';
 
 export async function GET() {
 	try {
 		const db = getDb();
 		await db.execute(sql`select 1`);
 
-		return json(
+		return Response.json(
 			{
 				status: 'ok',
 				database: 'connected',
@@ -17,7 +16,7 @@ export async function GET() {
 			{ status: 200 }
 		);
 	} catch (error) {
-		return json(
+		return Response.json(
 			{
 				status: 'error',
 				database: 'disconnected',

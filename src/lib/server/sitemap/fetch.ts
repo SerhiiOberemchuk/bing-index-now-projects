@@ -1,4 +1,4 @@
-import { normalizeDomain } from '$lib/server/domain';
+import { normalizeDomain } from '#lib/server/domain.js';
 
 const USER_AGENT = 'IndexNow-Control-Center/1.0';
 const FETCH_TIMEOUT_MS = 15_000;

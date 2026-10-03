@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
-	import { DEFAULT_PROJECT_SCHEDULE, scheduleLabel } from '$lib/schedule';
+	import { isFormBusy, managedForm } from '#lib/client/form-feedback.svelte.js';
+	import { DEFAULT_PROJECT_SCHEDULE, scheduleLabel } from '#lib/schedule.js';
 
 	let { form, data } = $props();
 

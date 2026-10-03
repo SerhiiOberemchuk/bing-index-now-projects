@@ -1,6 +1,12 @@
+import adapter from '@sveltejs/adapter-vercel';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-	plugins: [sveltekit()]
+	plugins: [
+		sveltekit({
+			adapter: adapter({ split: false }),
+			dynamicCompileOptions: ({ filename }) => (filename.includes('node_modules') ? undefined : { runes: true })
+		})
+	]
 });

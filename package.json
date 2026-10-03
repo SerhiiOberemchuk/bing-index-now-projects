@@ -16,24 +16,33 @@
     "db:studio": "drizzle-kit studio"
   },
   "devDependencies": {
-    "@sveltejs/adapter-vercel": "^6.3.3",
-    "@sveltejs/kit": "^2.61.1",
-    "@sveltejs/vite-plugin-svelte": "^7.1.2",
-    "@types/nodemailer": "^8.0.0",
-    "drizzle-kit": "^0.31.10",
-    "svelte": "^5.55.9",
-    "svelte-check": "^4.4.8",
+    "@sveltejs/adapter-vercel": "^7.0.0",
+    "@sveltejs/kit": "^3.0.0",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@types/nodemailer": "^8.0.2",
+    "drizzle-kit": "^0.31.11",
+    "svelte": "^5.57.1",
+    "svelte-check": "^4.7.6",
     "typescript": "^6.0.3",
     "vite": "^8.0.14"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.1.0",
+    "@neondatabase/serverless": "^1.2.0",
     "@opentelemetry/api": "^1.9.1",
-    "better-auth": "^1.6.11",
-    "dotenv": "^17.4.2",
-    "drizzle-orm": "^0.45.2",
-    "nodemailer": "^8.0.9",
-    "svelte-sonner": "^1.1.1",
-    "zod": "^4.4.3"
+    "better-auth": "^1.7.7",
+    "dotenv": "^18.0.5",
+    "drizzle-orm": "^0.45.3",
+    "nodemailer": "^10.0.13",
+    "svelte-sonner": "^1.2.1",
+    "zod": "^4.6.5"
+  },
+  "overrides": {
+    "better-auth": {
+      "@sveltejs/kit": "$@sveltejs/kit"
+    }
+  },
+  "imports": {
+    "#lib": "./src/lib/index.js",
+    "#lib/*": "./src/lib/*"
   }
 }

@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
-	import { formatDateTime } from '$lib/format';
-	import { describeBingResponse } from '$lib/indexnow-response';
-	import { projectStatus } from '$lib/project-status';
-	import { scheduleLabel } from '$lib/schedule';
+	import { isFormBusy, managedForm } from '#lib/client/form-feedback.svelte.js';
+	import { formatDateTime } from '#lib/format.js';
+	import { describeBingResponse } from '#lib/indexnow-response.js';
+	import { projectStatus } from '#lib/project-status.js';
+	import { scheduleLabel } from '#lib/schedule.js';
 
 	let { data, form } = $props();
 

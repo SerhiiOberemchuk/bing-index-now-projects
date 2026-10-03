@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 
-import { getDb } from '$lib/server/db';
-import { projects } from '$lib/server/db/schema';
+import { getDb } from '#lib/server/db/index.js';
+import { projects } from '#lib/server/db/schema.js';
 
 export const load: PageServerLoad = async () => {
 	try {

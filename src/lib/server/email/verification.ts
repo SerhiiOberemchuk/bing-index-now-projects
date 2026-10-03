@@ -1,23 +1,24 @@
-import { env } from "$env/dynamic/private";
+import {
+  MAIL_PROVIDER,
+  GMAIL_USER,
+  GOOGLE_APP_PASSWORD,
+  BETTER_AUTH_URL,
+  SMTP_FROM
+} from "$app/env/private";
+
 import nodemailer from "nodemailer";
 
 function getTransporter() {
-  const useGmail =
-    env.MAIL_PROVIDER === "gmail" ||
-    (!!env.GMAIL_USER && !!env.GOOGLE_APP_PASSWORD);
+  const useGmail = MAIL_PROVIDER === "gmail" || !!GMAIL_USER && !!GOOGLE_APP_PASSWORD;
 
   if (useGmail) {
-    if (!env.GMAIL_USER || !env.GOOGLE_APP_PASSWORD) {
+    if (!GMAIL_USER || !GOOGLE_APP_PASSWORD) {
       return null;
     }
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
-
-      auth: {
-        user: env.GMAIL_USER,
-        pass: env.GOOGLE_APP_PASSWORD,
-      },
+      auth: { user: GMAIL_USER, pass: GOOGLE_APP_PASSWORD }
     });
 
     return transporter;
@@ -29,26 +30,23 @@ function toAbsoluteUrl(url: string) {
     return url;
   }
 
-  if (!env.BETTER_AUTH_URL) {
+  if (!BETTER_AUTH_URL) {
     return url;
   }
 
-  return new URL(url, env.BETTER_AUTH_URL).toString();
+  return new URL(url, BETTER_AUTH_URL).toString();
 }
 
-export async function sendVerificationEmail(
-  to: string,
-  verificationUrl: string,
-) {
-  const from = env.SMTP_FROM ?? env.GMAIL_USER;
+export async function sendVerificationEmail(to: string, verificationUrl: string) {
+  const from = SMTP_FROM ?? GMAIL_USER;
   const absoluteUrl = toAbsoluteUrl(verificationUrl);
   const smtp = getTransporter();
 
   if (!smtp || !from) {
     [
-      !env.GMAIL_USER && "GMAIL_USER",
-      !env.GOOGLE_APP_PASSWORD && "GOOGLE_APP_PASSWORD",
-      !from && "SMTP_FROM/GMAIL_USER",
+      !GMAIL_USER && "GMAIL_USER",
+      !GOOGLE_APP_PASSWORD && "GOOGLE_APP_PASSWORD",
+      !from && "SMTP_FROM/GMAIL_USER"
     ];
 
     console.warn(
@@ -76,7 +74,7 @@ export async function sendVerificationEmail(
 }
 
 export async function sendPasswordResetEmail(to: string, resetUrl: string) {
-  const from = env.SMTP_FROM ?? env.GMAIL_USER;
+  const from = SMTP_FROM ?? GMAIL_USER;
   const absoluteUrl = toAbsoluteUrl(resetUrl);
   const smtp = getTransporter();
 

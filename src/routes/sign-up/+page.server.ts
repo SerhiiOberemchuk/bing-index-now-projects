@@ -2,12 +2,12 @@ import { and, eq, isNull, or } from 'drizzle-orm';
 import { fail, redirect } from '@sveltejs/kit';
 
 import type { Actions, PageServerLoad } from './$types';
-import { auth, OWNER_EMAIL } from '$lib/server/auth';
-import { checkThrottle, clearThrottle, createThrottleKey, formatRetryAfter, recordThrottleFailure } from '$lib/server/auth-throttle';
-import { writeAuditLog } from '$lib/server/audit';
-import { getDb } from '$lib/server/db';
-import { authInvites, user as userTable } from '$lib/server/db/schema';
-import { getRequestIp } from '$lib/server/request-ip';
+import { auth, OWNER_EMAIL } from '#lib/server/auth.js';
+import { checkThrottle, clearThrottle, createThrottleKey, formatRetryAfter, recordThrottleFailure } from '#lib/server/auth-throttle.js';
+import { writeAuditLog } from '#lib/server/audit.js';
+import { getDb } from '#lib/server/db/index.js';
+import { authInvites, user as userTable } from '#lib/server/db/schema.js';
+import { getRequestIp } from '#lib/server/request-ip.js';
 
 export const load: PageServerLoad = async ({ url }) => ({
 	ownerEmail: OWNER_EMAIL,

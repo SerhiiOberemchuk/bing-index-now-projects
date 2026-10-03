@@ -2,9 +2,9 @@ import { fail } from '@sveltejs/kit';
 import { z } from 'zod';
 
 import type { Actions, PageServerLoad } from './$types';
-import { auth } from '$lib/server/auth';
-import { writeAuditLog } from '$lib/server/audit';
-import { getRequestIp } from '$lib/server/request-ip';
+import { auth } from '#lib/server/auth.js';
+import { writeAuditLog } from '#lib/server/audit.js';
+import { getRequestIp } from '#lib/server/request-ip.js';
 
 const revokeSchema = z.object({
 	token: z.string().min(1)

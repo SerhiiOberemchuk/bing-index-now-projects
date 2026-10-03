@@ -1,4 +1,4 @@
-import { env } from "$env/dynamic/private";
+import { bing_DATABASE_URL } from "$app/env/private";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 
@@ -13,7 +13,7 @@ export function getDb(): DbClient {
     return dbInstance;
   }
 
-  const databaseUrl = env.bing_DATABASE_URL;
+  const databaseUrl = bing_DATABASE_URL;
   if (!databaseUrl) {
     throw new Error("DATABASE_URL is not set.");
   }

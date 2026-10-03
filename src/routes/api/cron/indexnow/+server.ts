@@ -1,10 +1,9 @@
 import { and, asc, eq, isNull, lte, ne, or } from 'drizzle-orm';
-import { json } from '@sveltejs/kit';
 
-import { env } from '$env/dynamic/private';
-import { getDb } from '$lib/server/db';
-import { projects } from '$lib/server/db/schema';
-import { syncProject } from '$lib/server/indexnow/sync';
+import { CRON_SECRET } from '$app/env/private';
+import { getDb } from '#lib/server/db/index.js';
+import { projects } from '#lib/server/db/schema.js';
+import { syncProject } from '#lib/server/indexnow/sync.js';
 
 // Vercel Cron fires every 6 hours, a few seconds late. Without slack, a project due at 12:00:30
 // is skipped by the 12:00:05 run and waits until 18:00, so "daily" would drift to every 30 hours.
@@ -19,13 +18,12 @@ function getBearerToken(request: Request): string | null {
 }
 
 export async function GET({ request }) {
-	const CRON_SECRET = env.CRON_SECRET;
 	if (!CRON_SECRET) {
-		return json({ error: 'CRON_SECRET is not configured.' }, { status: 500 });
+		return Response.json({ error: 'CRON_SECRET is not configured.' }, { status: 500 });
 	}
 
 	if (getBearerToken(request) !== CRON_SECRET) {
-		return json({ error: 'Unauthorized' }, { status: 401 });
+		return Response.json({ error: 'Unauthorized' }, { status: 401 });
 	}
 
 	const db = getDb();
@@ -52,5 +50,5 @@ export async function GET({ request }) {
 		}
 	}
 
-	return json({ ok: true, projectsSynced: results.length, results });
+	return Response.json({ ok: true, projectsSynced: results.length, results });
 }

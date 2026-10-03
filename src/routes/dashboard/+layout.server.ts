@@ -1,8 +1,8 @@
 import { and, count, eq } from 'drizzle-orm';
 import type { LayoutServerLoad } from './$types';
-import { canManageProjects, getUserRole } from '$lib/server/authz';
-import { getDb } from '$lib/server/db';
-import { user } from '$lib/server/db/schema';
+import { canManageProjects, getUserRole } from '#lib/server/authz.js';
+import { getDb } from '#lib/server/db/index.js';
+import { user } from '#lib/server/db/schema.js';
 
 export const load: LayoutServerLoad = async ({ locals }) => {
 	const role = getUserRole(locals.user);

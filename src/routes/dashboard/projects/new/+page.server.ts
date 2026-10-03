@@ -2,12 +2,12 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { z } from 'zod';
 
 import type { Actions, PageServerLoad } from './$types';
-import { getDb } from '$lib/server/db';
-import { normalizeDomain } from '$lib/server/domain';
-import { verifyIndexNowKey } from '$lib/server/indexnow/verify-key';
-import { projects } from '$lib/server/db/schema';
-import { canManageProjects, MANAGE_PERMISSION_ERROR } from '$lib/server/authz';
-import { DEFAULT_PROJECT_SCHEDULE, isProjectSchedule, PROJECT_SCHEDULES } from '$lib/schedule';
+import { getDb } from '#lib/server/db/index.js';
+import { normalizeDomain } from '#lib/server/domain.js';
+import { verifyIndexNowKey } from '#lib/server/indexnow/verify-key.js';
+import { projects } from '#lib/server/db/schema.js';
+import { canManageProjects, MANAGE_PERMISSION_ERROR } from '#lib/server/authz.js';
+import { DEFAULT_PROJECT_SCHEDULE, isProjectSchedule, PROJECT_SCHEDULES } from '#lib/schedule.js';
 
 const createProjectSchema = z.object({
 	name: z.string().trim().min(2).max(120),

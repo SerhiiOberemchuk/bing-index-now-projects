@@ -1,8 +1,8 @@
 import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
 
-import type { DbClient } from '$lib/server/db';
-import { discoveredUrls, indexNowSubmissions, sitemaps } from '$lib/server/db/schema';
-import type { ProjectStats } from '$lib/project-status';
+import type { DbClient } from '#lib/server/db/index.js';
+import { discoveredUrls, indexNowSubmissions, sitemaps } from '#lib/server/db/schema.js';
+import type { ProjectStats } from '#lib/project-status.js';
 
 export async function getProjectStats(db: DbClient, projectIds: string[]): Promise<Map<string, ProjectStats>> {
 	const stats = new Map<string, ProjectStats>(

@@ -1,4 +1,4 @@
-import { describeBingResponse } from '$lib/indexnow-response';
+import { describeBingResponse } from '#lib/indexnow-response.js';
 
 export type ProjectStats = {
 	/** Pages currently listed in the site's sitemap. */

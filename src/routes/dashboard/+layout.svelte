@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { navigating, page } from '$app/state';
-	import brandMark from '$lib/assets/brand-mark.svg';
-	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
-	import DashboardSkeleton from '$lib/components/DashboardSkeleton.svelte';
+	import brandMark from '#lib/assets/brand-mark.svg';
+	import { isFormBusy, managedForm } from '#lib/client/form-feedback.svelte.js';
+	import DashboardSkeleton from '#lib/components/DashboardSkeleton.svelte';
 
 	let { data, children } = $props();
 	const isNavigating = $derived(Boolean(navigating.to));

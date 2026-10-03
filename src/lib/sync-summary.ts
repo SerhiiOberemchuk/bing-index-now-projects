@@ -1,4 +1,4 @@
-import { describeBingResponse } from '$lib/indexnow-response';
+import { describeBingResponse } from '#lib/indexnow-response.js';
 
 export type SyncResult = {
 	source: 'manual' | 'cron';

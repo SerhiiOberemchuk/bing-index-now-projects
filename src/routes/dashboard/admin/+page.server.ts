@@ -2,9 +2,9 @@ import { and, count, eq, isNull } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 
 import type { PageServerLoad } from './$types';
-import { getUserRole } from '$lib/server/authz';
-import { getDb } from '$lib/server/db';
-import { auditLog, authInvites, user } from '$lib/server/db/schema';
+import { getUserRole } from '#lib/server/authz.js';
+import { getDb } from '#lib/server/db/index.js';
+import { auditLog, authInvites, user } from '#lib/server/db/schema.js';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const role = getUserRole(locals.user);

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import logo from '$lib/assets/logo.svg';
+	import logo from '#lib/assets/logo.svg';
 
 	let { data } = $props();
 </script>

@@ -1,10 +1,10 @@
 import { asc } from 'drizzle-orm';
 
 import type { PageServerLoad } from './$types';
-import { getDb } from '$lib/server/db';
-import { normalizeDomain } from '$lib/server/domain';
-import { projects } from '$lib/server/db/schema';
-import { getProjectStats } from '$lib/server/indexnow/stats';
+import { getDb } from '#lib/server/db/index.js';
+import { normalizeDomain } from '#lib/server/domain.js';
+import { projects } from '#lib/server/db/schema.js';
+import { getProjectStats } from '#lib/server/indexnow/stats.js';
 
 export const load: PageServerLoad = async () => {
 	const db = getDb();

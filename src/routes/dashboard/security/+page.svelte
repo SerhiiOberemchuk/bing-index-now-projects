@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { isFormBusy, managedForm } from '$lib/client/form-feedback.svelte';
+	import { isFormBusy, managedForm } from '#lib/client/form-feedback.svelte.js';
 
 	let { data, form } = $props();
 

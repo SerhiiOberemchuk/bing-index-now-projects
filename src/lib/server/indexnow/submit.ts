@@ -1,8 +1,8 @@
 import { and, eq, inArray } from 'drizzle-orm';
 
-import type { DbClient } from '$lib/server/db';
-import { buildKeyLocation, normalizeDomain } from '$lib/server/domain';
-import { discoveredUrls, indexNowSubmissions, projects } from '$lib/server/db/schema';
+import type { DbClient } from '#lib/server/db/index.js';
+import { buildKeyLocation, normalizeDomain } from '#lib/server/domain.js';
+import { discoveredUrls, indexNowSubmissions, projects } from '#lib/server/db/schema.js';
 
 /** IndexNow accepts at most 10,000 URLs per request. */
 export const INDEXNOW_MAX_URLS = 10_000;

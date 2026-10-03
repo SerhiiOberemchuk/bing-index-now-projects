@@ -1,4 +1,4 @@
-import { buildKeyLocation, normalizeDomain } from '$lib/server/domain';
+import { buildKeyLocation, normalizeDomain } from '#lib/server/domain.js';
 
 export type IndexNowKeyVerification =
 	| { ok: true; keyLocation: string }

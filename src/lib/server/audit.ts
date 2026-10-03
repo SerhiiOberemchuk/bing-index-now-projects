@@ -1,5 +1,5 @@
-import { getDb } from '$lib/server/db';
-import { auditLog } from '$lib/server/db/schema';
+import { getDb } from '#lib/server/db/index.js';
+import { auditLog } from '#lib/server/db/schema.js';
 
 type AuditInput = {
 	actorUserId?: string | null;
